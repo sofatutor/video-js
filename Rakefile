@@ -62,21 +62,12 @@ namespace :build do
     Rake::Log["Combining source files"]
     combined = ""
 
-    first_files = [ '_begin.js', 'core.js', 'lib.js' ]
+    files = [ '_begin.js', 'core.js', 'lib.js', 'json.js', 'component.js', 'player.js', 'tech.js', 'controls.js', 'events.js', 'tracks.js', 'setup.js', '_end.js' ]
 
-    first_files.each do |item|
+    files.each do |item|
       Rake::Log[item]
       combined << File.read("src/#{item}")
     end
-
-    Dir.foreach('src') do |item|
-      next if (['.', '..', '.DS_Store', 'setup.js', '_end.js'] + first_files).include? item
-      combined << File.read("src/#{item}")
-    end
-
-    # combined << File.read("flash/swfobject.js")
-    combined << File.read("src/setup.js")
-    combined << File.read("src/_end.js")
 
     Rake::Log["Adding version number"]
     combined = combined.gsub('GENERATED_AT_BUILD', version_number)
