@@ -768,9 +768,9 @@ _V_.ChaptersTrackMenuItem = _V_.MenuItem.extend({
 
 // Add Buttons to controlBar
 _V_.merge(_V_.ControlBar.prototype.options.components, {
-  "subtitlesButton": {},
-  "captionsButton": {},
-  "chaptersButton": {}
+  //"subtitlesButton": {},
+  //"captionsButton": {},
+  //"chaptersButton": {}
 });
 
 // _V_.Cue = _V_.Component.extend({

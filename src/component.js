@@ -135,15 +135,17 @@ _V_.Component = _V_.Class.extend({
   hide: function(){
     this.el.style.display = "none";
   },
-  
+
+  flash: function(){
+    $(this.el).show().css('opacity', '0.8').css('width', '60px').css('height', '60px').css('margin','-30px 0 0 -30px').stop().animate({height: '96px', width: '96px', opacity: '0', 'margin-left': '-48px', 'margin-top': '-48px'}, 1000);
+  },
+
   fadeIn: function(){
-    this.removeClass("vjs-fade-out");
-    this.addClass("vjs-fade-in");
+    $(this.el).stop(true,true).fadeIn(2000);
   },
 
   fadeOut: function(){
-    this.removeClass("vjs-fade-in");
-    this.addClass("vjs-fade-out");
+    $(this.el).stop(true,true).fadeOut(2000);
   },
 
   lockShowing: function(){

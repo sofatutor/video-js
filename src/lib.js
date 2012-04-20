@@ -55,7 +55,7 @@ _V_.extend({
         attrname;
     for (attrname in attributes){
       if (attributes.hasOwnProperty(attrname)) {
-        if (attrname.indexOf("-") !== -1) {
+        if (attrname.indexOf("-") !== -1 || attrname === "style") {
           el.setAttribute(attrname, attributes[attrname]);
         } else {
           el[attrname] = attributes[attrname];

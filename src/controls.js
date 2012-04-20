@@ -17,10 +17,7 @@ _V_.ControlBar = _V_.Component.extend({
     components: {
       "playToggle": {},
       "fullscreenToggle": {},
-      "currentTimeDisplay": {},
-      "timeDivider": {},
-      "durationDisplay": {},
-      "remainingTimeDisplay": {},
+      "timeDisplay": {},
       "progressControl": {},
       "volumeControl": {},
       "muteToggle": {}
@@ -31,11 +28,11 @@ _V_.ControlBar = _V_.Component.extend({
     this._super(player, options);
 
     player.on("play", this.proxy(function(){
-      this.fadeIn();
-      this.player.on("mouseover", this.proxy(this.fadeIn));
-      this.player.on("mouseout", this.proxy(this.fadeOut));
+      this.mouseenter();
     }));
-
+    player.on("playclicked", this.proxy(this.bindEventhandler));
+    player.on("screenclicked", this.proxy(this.bindEventhandler));
+    player.on("posterclicked", this.proxy(this.bindEventhandler));
   },
 
   createElement: function(){
@@ -44,14 +41,24 @@ _V_.ControlBar = _V_.Component.extend({
     });
   },
 
-  fadeIn: function(){
-    this._super();
-    this.player.trigger("controlsvisible");
+  bindEventhandler: function(){
+    if (!eventhandlerBound) {
+      $(this.player.el).bind('mouseenter', this.proxy(this.mouseenter));
+      $(this.player.el).bind('mouseleave', this.proxy(this.mouseleave));
+      eventhandlerBound = true;
+    }
   },
 
-  fadeOut: function(){
-    this._super();
-    this.player.trigger("controlshidden");
+  mouseenter: function(){
+    this.player.trigger("controlsvisible");
+    $(this.el).stop(true,true).animate({ bottom: '0'},500);
+  },
+
+  mouseleave: function(){
+    if (!dragging) {
+      this.player.trigger("controlshidden");
+      $(this.el).stop(true,true).animate({ bottom: '-40px'},500);
+    }
   },
 
   lockShowing: function(){
@@ -161,8 +168,14 @@ _V_.PlayToggle = _V_.Button.extend({
   onClick: function(){
     if (this.player.paused()) {
       this.player.play();
+      if (!$(this.el).hasClass("vjs-play-control")) {
+        this.player.triggerEvent("playclicked");
+      }
     } else {
       this.player.pause();
+      if (!$(this.el).hasClass("vjs-play-control")) {
+        this.player.triggerEvent("pauseclicked");
+      }
     }
   },
 
@@ -201,6 +214,66 @@ _V_.FullscreenToggle = _V_.Button.extend({
 
 });
 
+
+_V_.UpperRightLogo = _V_.Button.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    player.on('controlsvisible', _V_.proxy(this, this.show));
+    player.on('controlshidden', _V_.proxy(this, this.hide));
+  },
+  createElement: function () {
+    return this._super("div", {
+        className: "vjs-upper-right-logo",
+        innerHTML: "",
+        style: "display: none"
+    })
+  },
+  onClick: function () {
+    this.player.triggerEvent("screenclicked");
+  },
+  show: function () {
+    $(this.el).stop(true,true).fadeIn(500);
+  },
+  hide: function () {
+    $(this.el).stop(true,true).fadeOut(500);
+  }
+});
+
+
+_V_.BigPlayToggle = _V_.Button.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    player.on("playclicked", _V_.proxy(this, this.onPlayClicked));
+    player.addEvent("pauseclicked", _V_.proxy(this, this.onPauseClicked));
+    player.addEvent("screenclicked", _V_.proxy(this, this.onClick));
+  },
+  createElement: function () {
+    return this._super("img", {
+      className: "vjs-big-play-toggle",
+      innerHTML: "",
+      style: "display: none"
+    })
+  },
+  onPlayClicked: function () {
+    $(this.el).attr('src', '/images/new_images/player/big_play_icon.png');
+    this.flash();
+  },
+  onPauseClicked: function () {
+    $(this.el).attr('src', '/images/new_images/player/big_pause_icon.png');
+    this.flash();
+  },
+  onClick: function () {
+    if (this.player.paused()) {
+      this.player.play();
+      this.onPlayClicked();
+    } else {
+      this.player.pause()
+      this.onPauseClicked();
+    }
+  }
+});
+
+
 /* Big Play Button
 ================================================================================ */
 _V_.BigPlayButton = _V_.Button.extend({
@@ -212,9 +285,10 @@ _V_.BigPlayButton = _V_.Button.extend({
   },
 
   createElement: function(){
-    return this._super("div", {
+    return this._super("img", {
       className: "vjs-big-play-button",
-      innerHTML: "<span></span>"
+      innerHTML: "",
+      src: "/images/new_images/player/big_play_icon.png"
     });
   },
 
@@ -225,6 +299,7 @@ _V_.BigPlayButton = _V_.Button.extend({
       this.player.currentTime(0);
     }
     this.player.play();
+    this.player.triggerEvent("posterclicked");
   }
 });
 
@@ -249,30 +324,59 @@ _V_.LoadingSpinner = _V_.Component.extend({
   },
 
   createElement: function(){
-
-    var classNameSpinner, innerHtmlSpinner;
-
-    if ( typeof this.player.el.style.WebkitBorderRadius == "string"
-         || typeof this.player.el.style.MozBorderRadius == "string"
-         || typeof this.player.el.style.KhtmlBorderRadius == "string"
-         || typeof this.player.el.style.borderRadius == "string")
-      {
-        classNameSpinner = "vjs-loading-spinner";
-        innerHtmlSpinner = "<div class='ball1'></div><div class='ball2'></div><div class='ball3'></div><div class='ball4'></div><div class='ball5'></div><div class='ball6'></div><div class='ball7'></div><div class='ball8'></div>";
-      } else {
-        classNameSpinner = "vjs-loading-spinner-fallback";
-        innerHtmlSpinner = "";
-      }
-
-    return this._super("div", {
-      className: classNameSpinner,
-      innerHTML: innerHtmlSpinner
-    });
+    return this._super("img", {
+      className: "vjs-loading-spinner",
+      innerHTML: "",
+      src: "/images/new_images/player/spinner.gif",
+      style: "display: none"
+    })
   }
 });
 
 /* Time
 ================================================================================ */
+_V_.TimeDisplay = _V_.Component.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    player.addEvent("timeupdate", _V_.proxy(this, this.updateContent))
+  },
+  createElement: function() {
+    var el = this._super("div", {
+      className: "vjs-time-controls",
+    });
+
+    var divider = _V_.createElement("span", {
+      className: "vjs-time-divider",
+      innerHTML: "/"
+    });
+
+    this.currentTime = _V_.createElement("span", {
+      className: "vjs-current-time-display",
+      innerHTML: "0:00"
+    });
+
+    this.duration = _V_.createElement("span", {
+      className: "vjs-duration-display",
+      innerHTML: "0:00"
+    });
+
+    el.appendChild(_V_.createElement("div").appendChild(this.currentTime));
+    el.appendChild(_V_.createElement("div").appendChild(divider));
+    el.appendChild(_V_.createElement("div").appendChild(this.duration));
+    return el;
+  },
+
+  updateContent: function() {
+    var time = (this.player.scrubbing) ? this.player.values.currentTime : this.player.currentTime();
+    this.currentTime.innerHTML = _V_.formatTime(time, this.player.duration())
+
+    if (this.player.duration()) {
+      this.duration.innerHTML = _V_.formatTime(this.player.duration())
+    }
+  }
+});
+
+
 _V_.CurrentTimeDisplay = _V_.Component.extend({
 
   init: function(player, options){
@@ -416,6 +520,8 @@ _V_.Slider = _V_.Component.extend({
     _V_.on(document, "mouseup", _V_.proxy(this, this.onMouseUp));
 
     this.onMouseMove(event);
+    _V_.addClass(this.el.parentElement, "dragging");
+    dragging = true;
   },
 
   onMouseUp: function(event) {
@@ -424,6 +530,8 @@ _V_.Slider = _V_.Component.extend({
     _V_.off(document, "mouseup", this.onMouseUp, false);
 
     this.update();
+    _V_.removeClass(this.el.parentElement, "dragging");
+    dragging = false;
   },
 
   update: function(){
@@ -737,7 +845,14 @@ _V_.MuteToggle = _V_.Button.extend({
   },
 
   onClick: function(event){
-    this.player.muted( this.player.muted() ? false : true );
+    if (this.player.muted()) {
+      this.player.muted(false);
+      this.player.volume(volume);
+    } else {
+      this.player.muted(true);
+      volume = this.player.volume();
+      this.player.volume(0);
+    }
   },
 
   update: function(event){
@@ -786,6 +901,7 @@ _V_.PosterImage = _V_.Button.extend({
   },
 
   onClick: function(){
+    this.player.triggerEvent("posterclicked");
     this.player.play();
   }
 });

@@ -1,5 +1,4 @@
-// HTML5 Shiv. Must be in <head> to support older browsers.
-document.createElement("video");document.createElement("audio");
+var eventhandlerBound, dragging, userVolume;
 
 var VideoJS = function(id, addOptions, ready){
   var tag; // Element of ID
@@ -66,7 +65,9 @@ VideoJS.options = {
     "posterImage": {},
     "textTrackDisplay": {},
     "loadingSpinner": {},
+    "upperRightLogo": {},
     "bigPlayButton": {},
+    "bigPlayToggle": {},
     "controlBar": {}
   }
 
