@@ -74,16 +74,11 @@ _V_.extend({
   },
 
   addClass: function(element, classToAdd){
-    if ((" "+element.className+" ").indexOf(" "+classToAdd+" ") == -1) {
-      element.className = element.className === "" ? classToAdd : element.className + " " + classToAdd;
-    }
+    $(element).addClass(classToAdd);
   },
 
   removeClass: function(element, classToRemove){
-    if (element.className.indexOf(classToRemove) == -1) { return; }
-    var classNames = element.className.split(" ");
-    classNames.splice(classNames.indexOf(classToRemove),1);
-    element.className = classNames.join(" ");
+    $(element).removeClass(classToRemove);
   },
 
   // Attempt to block the ability to select text while dragging controls

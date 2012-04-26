@@ -248,9 +248,8 @@ _V_.BigPlayToggle = _V_.Button.extend({
     player.addEvent("screenclicked", _V_.proxy(this, this.onClick));
   },
   createElement: function () {
-    return this._super("img", {
+    return _V_.createElement("img", {
       className: "vjs-big-play-toggle",
-      innerHTML: "",
       style: "display: none"
     })
   },
@@ -285,11 +284,10 @@ _V_.BigPlayButton = _V_.Button.extend({
   },
 
   createElement: function(){
-    return this._super("img", {
+    return _V_.createElement("img", {
       className: "vjs-big-play-button",
-      innerHTML: "",
       src: "/images/new_images/player/big_play_icon.png"
-    });
+    })
   },
 
   onClick: function(){
@@ -324,9 +322,8 @@ _V_.LoadingSpinner = _V_.Component.extend({
   },
 
   createElement: function(){
-    return this._super("img", {
+    return _V_.createElement("img", {
       className: "vjs-loading-spinner",
-      innerHTML: "",
       src: "/images/new_images/player/spinner.gif",
       style: "display: none"
     })
@@ -342,7 +339,7 @@ _V_.TimeDisplay = _V_.Component.extend({
   },
   createElement: function() {
     var el = this._super("div", {
-      className: "vjs-time-controls",
+      className: "vjs-time-controls"
     });
 
     var divider = _V_.createElement("span", {
