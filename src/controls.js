@@ -55,7 +55,7 @@ _V_.ControlBar = _V_.Component.extend({
   },
 
   mouseleave: function(){
-    if (!dragging) {
+    if (!state.isDragging) {
       this.player.trigger("controlshidden");
       $(this.el).stop(true,true).animate({ bottom: '-40px'},500);
     }
@@ -77,6 +77,10 @@ _V_.Button = _V_.Control.extend({
     this.on("click", this.onClick);
     this.on("focus", this.onFocus);
     this.on("blur", this.onBlur);
+
+    $(this.el).hover(function() {
+      $(".vjs-control-text", this).fadeToggle();
+    });
   },
 
   createElement: function(type, attrs){
@@ -151,13 +155,14 @@ _V_.PauseButton = _V_.Button.extend({
 ================================================================================ */
 _V_.PlayToggle = _V_.Button.extend({
 
-  buttonText: "Play",
+  buttonText: "Abspielen",
 
   init: function(player, options){
     this._super(player, options);
 
     player.on("play", _V_.proxy(this, this.onPlay));
     player.on("pause", _V_.proxy(this, this.onPause));
+    player.on("ended", _V_.proxy(this, this.onEnded));
   },
 
   buildCSSClass: function(){
@@ -181,16 +186,25 @@ _V_.PlayToggle = _V_.Button.extend({
 
   // OnPlay - Add the vjs-playing class to the element so it can change appearance
   onPlay: function(){
-    _V_.removeClass(this.el, "vjs-paused");
-    _V_.addClass(this.el, "vjs-playing");
+    state.isEnded = false;
+    this.updateButtonText("Pause");
+    $(this.el).removeClass("play replay").addClass("pause");
   },
 
   // OnPause - Add the vjs-paused class to the element so it can change appearance
   onPause: function(){
-    _V_.removeClass(this.el, "vjs-playing");
-    _V_.addClass(this.el, "vjs-paused");
-  }
+    if (!state.isEnded) {
+      this.updateButtonText("Abspielen");
+      $(this.el).removeClass("pause").addClass("play");
+    }
+  },
 
+  onEnded: function(){
+    this.player.pause();
+    state.isEnded = true;
+    this.updateButtonText("Erneut abspielen");
+    $(this.el).removeClass("play pause").addClass("replay");
+  }
 });
 
 
@@ -198,7 +212,7 @@ _V_.PlayToggle = _V_.Button.extend({
 ================================================================================ */
 _V_.FullscreenToggle = _V_.Button.extend({
 
-  buttonText: "Fullscreen",
+  buttonText: "Vollbild",
 
   buildCSSClass: function(){
     return "vjs-fullscreen-control " + this._super();
@@ -207,8 +221,10 @@ _V_.FullscreenToggle = _V_.Button.extend({
   onClick: function(){
     if (!this.player.isFullScreen) {
       this.player.requestFullScreen();
+      this.updateButtonText("Vollbild verlassen");
     } else {
       this.player.cancelFullScreen();
+      this.updateButtonText("Vollbild");
     }
   }
 
@@ -330,6 +346,36 @@ _V_.LoadingSpinner = _V_.Component.extend({
   }
 });
 
+/* Postroll
+================================================================================ */
+_V_.Postroll = _V_.Component.extend({
+  init: function(player, options){
+    this._super(player, options);
+    if (this.player.options.postroll) {
+      player.on("ended", _V_.proxy(this, this.show));
+      player.on("play", _V_.proxy(this, this.hide));
+    }
+  },
+
+  createElement: function(){
+    return _V_.createElement("div", {
+      className: "vjs-postroll",
+      innerHTML: this.player.options.postroll ? this.player.options.postroll : "",
+      style: "display: none"
+    })
+  },
+
+  show: function(){
+    console.log("show");
+    this.player.cancelFullScreen();
+    console.log(this.player.isFullScreen);
+    $(this.el).fadeIn();
+  },
+
+  hide: function(){
+    $(this.el).fadeOut();
+  }
+});
 /* Time
 ================================================================================ */
 _V_.TimeDisplay = _V_.Component.extend({
@@ -518,7 +564,7 @@ _V_.Slider = _V_.Component.extend({
 
     this.onMouseMove(event);
     _V_.addClass(this.el.parentElement, "dragging");
-    dragging = true;
+    state.isDragging = true;
   },
 
   onMouseUp: function(event) {
@@ -528,7 +574,7 @@ _V_.Slider = _V_.Component.extend({
 
     this.update();
     _V_.removeClass(this.el.parentElement, "dragging");
-    dragging = false;
+    state.isDragging = false;
   },
 
   update: function(){
@@ -740,11 +786,27 @@ _V_.PlayProgressBar = _V_.Component.extend({
 // Needed so it can determine seek position based on handle position/size
 _V_.SeekHandle = _V_.Component.extend({
 
+  init: function(player, options){
+    this._super(player, options);
+    player.on('timeupdate', _V_.proxy(this, this.update));
+    $(this.el).hover(function() {
+      $(".vjs-control-text", this).fadeToggle();
+    });
+  },
+
   createElement: function(){
     return this._super("div", {
       className: "vjs-seek-handle",
       innerHTML: '<span class="vjs-control-text">00:00</span>'
     });
+  },
+
+  update: function(){
+    var time = parseInt(this.player.currentTime());
+    var minutes = parseInt(time / 60);
+    var seconds = time % 60;
+    var timeString = (minutes > 9 ? minutes.toString() : '0' + minutes.toString()) + ':' + (seconds > 9 ? seconds.toString() : '0' + seconds.toString());
+    this.updateButtonText(timeString);
   }
 
 });
@@ -843,9 +905,11 @@ _V_.MuteToggle = _V_.Button.extend({
 
   onClick: function(event){
     if (this.player.muted()) {
+      this.updateButtonText("Mute");
       this.player.muted(false);
       this.player.volume(volume);
     } else {
+      this.updateButtonText("Unmute");
       this.player.muted(true);
       volume = this.player.volume();
       this.player.volume(0);

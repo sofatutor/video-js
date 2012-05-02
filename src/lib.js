@@ -283,8 +283,12 @@ _V_.extend({
     }
 
     return url;
-  }
+  },
 
+  showGeneralError: function(msg){
+    $('.vjs-general-error').show();
+    $('.vjs-general-error .details').html(msg);
+  }
 });
 
 // usage: log('inside coolFunc', this, arguments);

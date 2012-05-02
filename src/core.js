@@ -1,4 +1,9 @@
-var eventhandlerBound, dragging, userVolume;
+var eventhandlerBound, userVolume;
+
+var state = {
+  isDragging: false,
+  isEnded: false
+};
 
 var VideoJS = function(id, addOptions, ready){
   var tag; // Element of ID
@@ -68,8 +73,11 @@ VideoJS.options = {
     "upperRightLogo": {},
     "bigPlayButton": {},
     "bigPlayToggle": {},
+    "postroll": {},
     "controlBar": {}
-  }
+  },
+
+  postroll: false
 
   // components: [
   //   "poster",

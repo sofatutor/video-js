@@ -449,6 +449,7 @@ _V_.flash = _V_.PlaybackTech.extend({
         // Create error listener for all swf errors
         iWin.errors = _V_.proxy(this.player, function(swfID, eventName){
           _V_.log("Flash Error", eventName);
+          _V_.showGeneralError("Flash Error: " + eventName);
         });
 
       }));

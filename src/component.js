@@ -71,6 +71,10 @@ _V_.Component = _V_.Class.extend({
     return "";
   },
 
+  updateButtonText: function(text){
+    $(".vjs-control-text", this.el).html(text);
+  },
+
   initComponents: function(){
     var options = this.options;
     if (options && options.components) {

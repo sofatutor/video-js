@@ -43,7 +43,7 @@ _V_.Player = _V_.Component.extend({
     this.height(options.height, true);
 
     // Update tag id/class for use as HTML5 playback tech
-    // Might think we should do this after embedding in container so .vjs-tech class 
+    // Might think we should do this after embedding in container so .vjs-tech class
     // doesn't flash 100% width/height, but class only applies with .video-js parent
     tag.id += "_html5_api";
     tag.className = "vjs-tech";
@@ -360,6 +360,7 @@ _V_.Player = _V_.Component.extend({
 
   onError: function(e) {
     _V_.log("Video Error", e);
+    _V_.showGeneralError("Video Error");
   },
 
 /* Player API
@@ -420,9 +421,9 @@ _V_.Player = _V_.Component.extend({
 
   // Method for calling methods on the current playback technology
   // techCall: function(method, arg){
-  // 
+  //
   //   // if (this.isReady) {
-  //   //   
+  //   //
   //   // } else {
   //   //   _V_.log("The playback technology API is not ready yet. Use player.ready(myFunction)."+" ["+method+"]", arguments.callee.caller.arguments.callee.caller.arguments.callee.caller)
   //   //   return false;
@@ -757,6 +758,7 @@ _V_.Player = _V_.Component.extend({
         }
       } else {
         _V_.log("No compatible source and playback technology were found.")
+        $('.vjs-no-playback-error').show();
       }
 
     // Case: Source object { src: "", type: "" ... }
