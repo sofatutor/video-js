@@ -18,7 +18,7 @@ _V_.ControlBar = _V_.Component.extend({
       "playToggle": {},
       "fullscreenToggle": {},
       "timeDisplay": {},
-      "progressControl": {},
+      "timedCommentsToggle": {},
       "volumeControl": {},
       "muteToggle": {}
     }
@@ -52,12 +52,16 @@ _V_.ControlBar = _V_.Component.extend({
   mouseenter: function(){
     this.player.trigger("controlsvisible");
     $(this.el).stop(true,true).animate({ bottom: '0'},500);
+    $('.vjs-progress-control').stop(true,true).animate({ bottom: '29px'},500);
+    // $('.comment-time').delay(400).fadeIn();
   },
 
   mouseleave: function(){
     if (!state.isDragging) {
       this.player.trigger("controlshidden");
       $(this.el).stop(true,true).animate({ bottom: '-40px'},500);
+      $('.vjs-progress-control').stop(true,true).animate({ bottom: '-10px'},500);
+      // $('.comment-time').stop(true, true).hide();
     }
   },
 
@@ -207,6 +211,64 @@ _V_.PlayToggle = _V_.Button.extend({
   }
 });
 
+/* Timed Comments
+================================================================================ */
+_V_.TimedCommentsToggle = _V_.Button.extend({
+  timedCommend: true,
+  
+  init: function (player, options) {
+    this._super(player, options);
+    player.on('timeupdate', _V_.proxy(this, this.update));
+    if($(window).height() >= 600){
+      $('.timed-comment').addClass('lower');
+      $('.tip').addClass('top');
+    }
+  },
+
+  buttonText: "Kommentare aus",
+
+  buildCSSClass: function(){
+    return "vjs-timed-comments-control " + this._super();
+  },
+
+  onClick: function(){
+    if ($(this.el).hasClass("off")) {
+      $(this.el).removeClass('off');
+      this.timedCommend = true
+      this.updateButtonText("Kommentare aus");
+    } else {
+      $(this.el).addClass('off');
+      this.timedCommend = false
+      this.updateButtonText("Kommentare an");
+    }
+  },
+  
+  update: function () {
+    var player = this.player
+    var timedCommend = this.timedCommend
+    var duration = 5 // seconds to display timed comment
+    
+    $('.timed-comment').each(function() {
+      var current = parseInt(player.currentTime());
+      var time = $(this).attr('data-time');
+      
+      if (timedCommend && current == time){
+        $(this).fadeIn();
+        $('.vjs-controls').animate({ bottom: '0'},500);
+        $('.vjs-progress-control').animate({ bottom: '29px'},500);
+        //$('.comment-time').delay(400).fadeIn();
+      }
+      
+      if (($(this).is(':visible')) && ((current - duration >= time) || (current < time)) ) {
+        $(this).fadeOut();
+        $('.vjs-controls').animate({ bottom: '-40px'},500);
+        $('.vjs-progress-control').animate({ bottom: '-10px'},500);
+        //$('.comment-time').hide();
+      }
+    });
+  }
+
+});
 
 /* Fullscreen Toggle Behaviors
 ================================================================================ */
