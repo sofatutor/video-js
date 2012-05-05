@@ -185,12 +185,17 @@ _V_.PlayToggle = _V_.Button.extend({
   },
 
   buildCSSClass: function(){
-    return "vjs-play-control " + this._super();
+    return "vjs-play-control play " + this._super();
   },
 
   // OnClick - Toggle between play and pause
   onClick: function(){
     if (this.player.paused()) {
+      if ($(this.el).hasClass("replay")) {
+        if(this.player.currentTime()) {
+          this.player.currentTime(0);
+        }
+      }
       this.player.play();
       if (!$(this.el).hasClass("vjs-play-control")) {
         this.player.triggerEvent("playclicked");
@@ -1009,11 +1014,11 @@ _V_.MuteToggle = _V_.Button.extend({
     if (this.player.muted()) {
       this.updateButtonText("Mute");
       this.player.muted(false);
-      this.player.volume(volume);
+      this.player.volume(userVolume);
     } else {
       this.updateButtonText("Unmute");
+      userVolume = this.player.volume();
       this.player.muted(true);
-      volume = this.player.volume();
       this.player.volume(0);
     }
   },

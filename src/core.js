@@ -76,7 +76,7 @@ VideoJS.options = {
     "postroll": {},
     "progressControl": {},
     "controlBar": {}
-  },
+  }
 
   // components: [
   //   "poster",
