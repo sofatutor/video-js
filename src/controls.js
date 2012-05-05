@@ -12,6 +12,9 @@ _V_.Control = _V_.Component.extend({
 ================================================================================ */
 _V_.ControlBar = _V_.Component.extend({
 
+  useractive: null,
+  userInactive: false,
+
   options: {
     loadEvent: "play",
     components: {
@@ -19,20 +22,17 @@ _V_.ControlBar = _V_.Component.extend({
       "fullscreenToggle": {},
       "timeDisplay": {},
       "timedCommentsToggle": {},
-      "volumeControl": {},
-      "muteToggle": {}
+      "muteToggle": {},
+      "volumeControl": {}
     }
   },
 
   init: function(player, options){
     this._super(player, options);
-
-    player.on("play", this.proxy(function(){
-      this.mouseenter();
-    }));
-    player.on("playclicked", this.proxy(this.bindEventhandler));
-    player.on("screenclicked", this.proxy(this.bindEventhandler));
-    player.on("posterclicked", this.proxy(this.bindEventhandler));
+    $(this.player.el).bind('mouseenter', this.proxy(this.mouseenter));
+    $(this.player.el).bind('mouseleave', this.proxy(this.mouseleave));
+    this.player.on("userActive", this.proxy(this.show));
+    this.player.on("userInactive", this.proxy(this.hide));
   },
 
   createElement: function(){
@@ -41,28 +41,43 @@ _V_.ControlBar = _V_.Component.extend({
     });
   },
 
-  bindEventhandler: function(){
-    if (!eventhandlerBound) {
-      $(this.player.el).bind('mouseenter', this.proxy(this.mouseenter));
-      $(this.player.el).bind('mouseleave', this.proxy(this.mouseleave));
-      eventhandlerBound = true;
-    }
-  },
-
-  mouseenter: function(){
+  show: function(){
     this.player.trigger("controlsvisible");
     $(this.el).stop(true,true).animate({ bottom: '0'},500);
     $('.vjs-progress-control').stop(true,true).animate({ bottom: '29px'},500);
     // $('.comment-time').delay(400).fadeIn();
   },
 
+  hide: function() {
+    this.player.trigger("controlshidden");
+    $(this.el).stop(true,true).animate({ bottom: '-40px'},500);
+    $('.vjs-progress-control').stop(true,true).animate({ bottom: '-10px'},500);
+    // $('.comment-time').stop(true, true).hide();
+  },
+
+  mouseenter: function(){
+    this.player.trigger("userActive");
+    $(this.player.el).bind('mousemove', this.proxy(this.mousemove));
+    $(this.player.el).bind('click', this.proxy(this.mousemove));
+  },
+
   mouseleave: function(){
     if (!state.isDragging) {
-      this.player.trigger("controlshidden");
-      $(this.el).stop(true,true).animate({ bottom: '-40px'},500);
-      $('.vjs-progress-control').stop(true,true).animate({ bottom: '-10px'},500);
-      // $('.comment-time').stop(true, true).hide();
+      this.player.trigger("userInactive");
+      clearTimeout(this.useractive);
+      $(this.player.el).unbind('mousemove');
+      $(this.player.el).unbind('click', this.proxy(this.mousemove));
     }
+  },
+
+  mousemove: function(){
+    var self = this;
+    if (self.userInactive) {
+      self.player.trigger("userActive");
+      self.userInactive = false;
+    }
+    clearTimeout(self.useractive);
+    self.useractive = setTimeout(function() { self.player.trigger("userInactive"); self.userInactive = true; }, 4000);
   },
 
   lockShowing: function(){
@@ -273,25 +288,43 @@ _V_.TimedCommentsToggle = _V_.Button.extend({
 /* Fullscreen Toggle Behaviors
 ================================================================================ */
 _V_.FullscreenToggle = _V_.Button.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    player.on('showPostroll', _V_.proxy(this, this.disable));
+    player.on('hidePostroll', _V_.proxy(this, this.enable));
+  },
+
+  enabled: true,
 
   buttonText: "Vollbild",
 
   buildCSSClass: function(){
-    return "vjs-fullscreen-control " + this._super();
+    return "vjs-fullscreen-control enabled " + this._super();
   },
 
   onClick: function(){
-    if (!this.player.isFullScreen) {
-      this.player.requestFullScreen();
-      this.updateButtonText("Vollbild verlassen");
-    } else {
-      this.player.cancelFullScreen();
-      this.updateButtonText("Vollbild");
+    if (this.enabled) {
+      if (!this.player.isFullScreen) {
+        this.player.requestFullScreen();
+        this.updateButtonText("Vollbild verlassen");
+      } else {
+        this.player.cancelFullScreen();
+        this.updateButtonText("Vollbild");
+      }
     }
+  },
+
+  disable: function(){
+    this.enabled = false;
+    $(this.el).removeClass('enabled');
+  },
+
+  enable: function(){
+    this.enabled = true;
+    $(this.el).addClass('enabled');
   }
 
 });
-
 
 _V_.UpperRightLogo = _V_.Button.extend({
   init: function (player, options) {
@@ -411,33 +444,40 @@ _V_.LoadingSpinner = _V_.Component.extend({
 /* Postroll
 ================================================================================ */
 _V_.Postroll = _V_.Component.extend({
+
+  postroll: null,
+
   init: function(player, options){
+    this.postroll = $('.vjs-postroll');
     this._super(player, options);
-    if (this.player.options.postroll) {
+    if (this.postroll.length > 0) {
       player.on("ended", _V_.proxy(this, this.show));
       player.on("play", _V_.proxy(this, this.hide));
+      player.on("seeking", _V_.proxy(this, this.hide));
     }
   },
 
   createElement: function(){
     return _V_.createElement("div", {
-      className: "vjs-postroll",
-      innerHTML: this.player.options.postroll ? this.player.options.postroll : "",
+      className: this.postroll.length > 0 ? this.postroll.attr('class') : "",
+      innerHTML: this.postroll.length > 0 ? this.postroll.html() : "",
       style: "display: none"
     })
   },
 
   show: function(){
-    console.log("show");
-    this.player.cancelFullScreen();
-    console.log(this.player.isFullScreen);
-    $(this.el).fadeIn();
+    if (this.player.isFullScreen)
+      this.player.cancelFullScreen();
+    $(this.el).show();
+    this.player.triggerEvent("showPostroll");
   },
 
   hide: function(){
-    $(this.el).fadeOut();
+    $(this.el).hide();
+    this.player.triggerEvent("hidePostroll");
   }
 });
+
 /* Time
 ================================================================================ */
 _V_.TimeDisplay = _V_.Component.extend({

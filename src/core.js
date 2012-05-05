@@ -1,4 +1,4 @@
-var eventhandlerBound, userVolume;
+var userVolume;
 
 var state = {
   isDragging: false,
@@ -77,8 +77,6 @@ VideoJS.options = {
     "progressControl": {},
     "controlBar": {}
   },
-
-  postroll: false
 
   // components: [
   //   "poster",
