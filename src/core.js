@@ -74,7 +74,7 @@ VideoJS.options = {
     "bigPlayButton": {},
     "bigPlayToggle": {},
     "postroll": {},
-    "progressControl": {},
+    //"progressControl": {},
     "controlBar": {}
   }
 

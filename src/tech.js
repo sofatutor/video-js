@@ -230,7 +230,7 @@ _V_.html5.canPlaySource = function(srcObj){
 };
 
 // List of all HTML5 events (various uses).
-_V_.html5.events = "loadstart,suspend,abort,error,emptied,stalled,loadedmetadata,loadeddata,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,durationchange,timeupdate,progress,play,pause,ratechange,volumechange,playclicked,pauseclicked,screenclicked,posterclicked,userActive,userInactive,showPostroll,hidePostroll".split(",");
+_V_.html5.events = "loadstart,suspend,abort,error,emptied,stalled,loadedmetadata,loadeddata,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,durationchange,timeupdate,progress,play,pause,ratechange,volumechange,playclicked,pauseclicked,screenclicked,posterclicked,userActive,userInactive,showPostroll,hidePostroll,timedCommentsOn,timedCommentsOff,showTimedComment,hideTimedComment,noControls,halfControls,fullControls".split(",");
 
 /* HTML5 Device Fixes ---------------------------------------------------------- */
 

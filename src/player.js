@@ -84,6 +84,30 @@ _V_.Player = _V_.Component.extend({
       });
     }
 
+    this.ready(function () {
+      new _V_.ProgressControl(this);
+      new _V_.SeekBar(this);
+      new _V_.ProgressControl(this, 'fullScreen');
+      new _V_.SeekBar(this, 'fullScreen');
+    });
+
+    // Timed Comments
+    this.normalTimedComments = {};
+    this.fullScreenTimedComments = {};
+    this.timedCommentsController;
+    this.ready(function () {
+      if (options.timedComments && options.timedComments.length > 0) {
+        var player = this;
+        $.each(options.timedComments, function (index, timedComment) {
+          player.normalTimedComments[index] = new _V_.NormalTimedComment(player, timedComment, index);
+          player.fullScreenTimedComments[index] = new _V_.FullScreenTimedComment(player, timedComment, index);
+          new _V_.NormalTimedCommentDot(player, timedComment, index);
+          new _V_.FullScreenTimedCommentDot(player, timedComment, index);
+        });
+        player.timedCommentsController = new _V_.TimedCommentsController(player);
+      }
+    });
+
     // Tracks defined in tracks.js
     this.textTracks = [];
     if (options.tracks && options.tracks.length > 0) {
