@@ -1623,14 +1623,6 @@ _V_.MenuItem = _V_.Button.extend({
 
   onClick: function(){
     this.selected(true);
-  },
-
-  selected: function(selected){
-    if (selected) {
-      this.addClass("vjs-selected");
-    } else {
-      this.removeClass("vjs-selected")
-    }
   }
-
 });
+
