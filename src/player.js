@@ -146,9 +146,11 @@ _V_.Player = _V_.Component.extend({
       });
     });
     
-    this.on('play',  this.options.videoViewTracker.start);
-    this.on('pause', this.options.videoViewTracker.stop);
-    this.on('ended', this.options.videoViewTracker.stop);
+    if (this.options.videoViewTracker) {
+      this.on('play',  this.options.videoViewTracker.start);
+      this.on('pause', this.options.videoViewTracker.stop);
+      this.on('ended', this.options.videoViewTracker.stop);
+    }
     
     // Tracks defined in tracks.js
     this.textTracks = [];
