@@ -151,11 +151,11 @@ _V_.ControlBar = _V_.Component.extend({
 
   // animations
   firstHalfUp: function () {
-    $('.vjs-progress-control').show().css('opacity', '1');
+    $('.vjs-progress-control', $(this.player.el).parent()).show().css('opacity', '1');
   },
   
   secondHalfUp: function () {
-    $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
+    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
       $(this).stop().show().animate({ bottom: '29px' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
     }).dequeue('progress');
 
@@ -167,7 +167,7 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   secondHalfDown: function () {
-    $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
+    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
       $(this).stop().show().animate({ bottom: '0' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
     }).dequeue('progress');
 
@@ -179,11 +179,11 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   firstHalfDown: function () {
-    $('.vjs-progress-control').hide();
+    $('.vjs-progress-control', $(this.player.el).parent()).hide();
   },
   
   fullUp: function () {
-    $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
+    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
       $(this).stop().show().animate({ bottom: '29px' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
     }).dequeue('progress');
     
@@ -197,8 +197,8 @@ _V_.ControlBar = _V_.Component.extend({
       $(this).animate({ bottom: '-29px' }, { duration: 500, queue: false });
     }).dequeue('buttons');
     
-    $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
-      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control').dequeue('progress') } } );
+    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
+      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control', $(this.player.el).parent()).dequeue('progress') } } );
     }).queue('progress', function() {
       $(this).animate({ opacity: '0' }, { queue: false });
     }).dequeue('progress');
@@ -873,9 +873,11 @@ _V_.FullscreenToggle = _V_.Button.extend({
   },
 
   disable: function(){
-    this.enabled = false;
-    $(this.el).removeClass('enabled');
-    $(this.el).unbind('hover');
+    if (!(_V_.isFF() && !this.player.currentSrc().match(/webm/)) ) {
+      this.enabled = false;
+      $(this.el).removeClass('enabled');
+      $(this.el).unbind('hover');
+    }
   },
 
   enable: function(){
@@ -1044,7 +1046,7 @@ _V_.Postroll = _V_.Component.extend({
   },
 
   show: function(){
-    if (this.player.isFullScreen) {
+    if (this.player.isFullScreen && !(_V_.isFF() && !this.player.currentSrc().match(/webm/)) ) {
       this.player.cancelFullScreen();
     }
     $(this.el).show();
