@@ -1,3 +1,8 @@
+/* CONTROLS
+================================================================================
+================================================================================ */
+
+
 /* Control - Base class for all control elements
 ================================================================================ */
 _V_.Control = _V_.Component.extend({
@@ -11,18 +16,15 @@ _V_.Control = _V_.Component.extend({
 /* Control Bar
 ================================================================================ */
 _V_.ControlBar = _V_.Component.extend({
-
-  useractive: null,
-  userInactive: false,
-
+  
   visible: false,
-
+  
+  locked: false,
+  
   visibleTimedComments: false,
   
   userIsActive: false,
   
-  locked: false,
-
   options: {
     loadEvent: "play",
     components: {
@@ -34,34 +36,40 @@ _V_.ControlBar = _V_.Component.extend({
       "volumeControl": {}
     }
   },
-
+  
   init: function(player, options){
     this._super(player, options);
-    $(this.player.el).parent().bind('mouseenter', this.proxy(this.mouseenter));
-    $(this.player.el).parent().bind('mouseleave', this.proxy(this.mouseleave));
-    $(this.el).bind('mouseenter', this.proxy(this.enterControls));
-    $(this.el).bind('mouseleave', this.proxy(this.leaveControls));
-    this.player.on("userActive", this.proxy(this.userActive));
-    this.player.on("userInactive", this.proxy(this.userInactive));
-    this.player.on('showTimedComment', this.proxy(this.increaseTimedComments));
-    this.player.on('hideTimedComment', this.proxy(this.decreaseTimedComments));
-    this.player.on('lockControls', this.proxy(this.lockControls));
-    this.player.on('unlockControls', this.proxy(this.unlockControls));
+    
+    player.one('play', this.proxy(function () {
+      $(this.el).bind('mouseenter',      this.proxy(this.enterControls));
+      $(this.el).bind('mouseleave',      this.proxy(this.leaveControls));
+      
+      this.player.on('userActive',       this.proxy(this.userActive));
+      this.player.on('userInactive',     this.proxy(this.userInactive));
+      
+      this.player.on('showTimedComment', this.proxy(this.increaseTimedComments));
+      this.player.on('hideTimedComment', this.proxy(this.decreaseTimedComments));
+      
+      this.player.on('lockControls',     this.proxy(this.lockControls));
+      this.player.on('unlockControls',   this.proxy(this.unlockControls));
+      
+      this.player.trigger('userActive');
+    }));
   },
-
+  
   createElement: function(){
     return _V_.createElement("div", {
       className: "vjs-controls"
     });
   },
-
+  
   increaseTimedComments: function () {
-    this.visibleTimedComments = true;//this.visibleTimedComments + 1;
+    this.visibleTimedComments = true;
     this.update();
   },
 
   decreaseTimedComments: function () {
-    this.visibleTimedComments = false;//this.visibleTimedComments - 1;
+    this.visibleTimedComments = false;
     this.update();
   },
   
@@ -79,7 +87,7 @@ _V_.ControlBar = _V_.Component.extend({
     // not visible
     if (!this.visible) {
       // user active -> full
-      if (this.userIsActive) {
+      if (this.userIsActive || this.locked) {
         this.show('full');
       // user inactive, but timed comments -> half
       } else if (this.visibleTimedComments) {
@@ -88,7 +96,7 @@ _V_.ControlBar = _V_.Component.extend({
     // half visible
     } else if (this.visible === 'half') {
       // user active -> full
-      if (this.userIsActive) {
+      if (this.userIsActive || this.locked) {
         this.show('full');
       // user inactive and no timed comments -> hide
       } else if (!this.visibleTimedComments) {
@@ -97,19 +105,13 @@ _V_.ControlBar = _V_.Component.extend({
     // fully visible
     } else {
       if (!this.userIsActive) {
-        if (!this.visibleTimedComments) {
+        if (!this.visibleTimedComments && !this.locked) {
           this.hide();
         } else if (this.visibleTimedComments) {
           this.show('half');
         }
       }
     }
-    /*
-    if (!this.visible && (this.visibleTimedComments > 0 || this.userIsActive)) {
-      this.show();
-    } else if (this.visible && this.visibleTimedComments === 0 && !this.userIsActive) {
-      this.hide();
-    }*/
   },
   
   show: function(mode){
@@ -134,10 +136,6 @@ _V_.ControlBar = _V_.Component.extend({
       this.visible = 'half';
       this.player.trigger('halfControls');
     }
-   /* this.visible = true;
-    $(this.el).stop(true,true).animate({ bottom: '0'},500);
-    $('.vjs-progress-control').stop(true,true).animate({ bottom: '29px'},500);*/
-    // $('.comment-time').delay(400).fadeIn();
   },
 
   hide: function(mode) {
@@ -149,9 +147,6 @@ _V_.ControlBar = _V_.Component.extend({
     }
     this.visible = false;
     this.player.trigger('noControls');
-    /*$(this.el).stop(true,true).animate({ bottom: '-40px'},500);
-    $('.vjs-progress-control').stop(true,true).animate({ bottom: '-10px'},500);*/
-    // $('.comment-time').stop(true, true).hide();
   },
 
   // animations
@@ -191,7 +186,7 @@ _V_.ControlBar = _V_.Component.extend({
     $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
       $(this).stop().show().animate({ bottom: '29px' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
     }).dequeue('progress');
-
+    
     $(this.el).clearQueue('buttons').queue('buttons', function() {
       $(this).animate({ bottom: '0' }, { duration: 500, queue: false });
     }).dequeue('buttons');
@@ -201,86 +196,47 @@ _V_.ControlBar = _V_.Component.extend({
     $(this.el).clearQueue('buttons').queue('buttons', function() {
       $(this).animate({ bottom: '-29px' }, { duration: 500, queue: false });
     }).dequeue('buttons');
-
+    
     $('.vjs-progress-control').clearQueue('progress').queue('progress', function() {
       $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control').dequeue('progress') } } );
     }).queue('progress', function() {
       $(this).animate({ opacity: '0' }, { queue: false });
     }).dequeue('progress');
   },
-
-
-  mouseenter: function(){
-    this.player.trigger("userActive");
-    $(this.player.el).parent().bind('mousemove', this.proxy(this.mousemove));
-    $(this.player.el).parent().bind('click', this.proxy(this.mousemove));
-  },
-
-  mouseleave: function(){
-    if (!state.isDragging) {
-      this.player.trigger("userInactive");
-      clearTimeout(this.useractive);
-      $(this.player.el).parent().unbind('mousemove');
-      $(this.player.el).parent().unbind('click', this.proxy(this.mousemove));
-    }
-  },
-
   
   lockControls: function() {
     this.locked = true;
   },
-
+  
   unlockControls: function() {
     this.locked = false;
   },
-
+  
   enterControls: function() {
     this.lockControls();
   },
   
   leaveControls: function() {
     this.unlockControls();
-  },
-  
-  mousemove: function(){
-    var self = this;
-    if (self.userInactive) {
-      self.player.trigger("userActive");
-      self.userInactive = false;
-    }
-    clearTimeout(self.useractive);
-    if (!self.locked) {
-      self.useractive = setTimeout(function() { self.player.trigger("userInactive"); self.userInactive = true; }, 10000);
-    }
-  },
-
-  lockShowing: function(){
-    this.el.style.opacity = "1";
   }
-
 });
 
 /* Button - Base class for all buttons
 ================================================================================ */
 _V_.Button = _V_.Control.extend({
-
   init: function(player, options){
     this._super(player, options);
 
     this.on("click", this.onClick);
     this.on("focus", this.onFocus);
     this.on("blur", this.onBlur);
-
-    $(this.el).hover(function() {
-      $(".vjs-control-text", this).fadeToggle();
-    });
   },
 
   createElement: function(type, attrs){
     // Add standard Aria and Tabindex info
     attrs = _V_.merge({
       className: this.buildCSSClass(),
-      innerHTML: '<div><span class="vjs-control-text">' + (this.buttonText || "Need Text") + '</span></div>',
+      innerHTML: '<div></div>',
       role: "button",
       tabIndex: 0
     }, attrs);
@@ -308,51 +264,56 @@ _V_.Button = _V_.Control.extend({
   // Blur - Remove keyboard triggers
   onBlur: function(){
     _V_.off(document, "keyup", _V_.proxy(this, this.onKeyPress));
-  }
-
-});
-
-/* Play Button
-================================================================================ */
-_V_.PlayButton = _V_.Button.extend({
-
-  buttonText: "Play",
-
-  buildCSSClass: function(){
-    return "vjs-play-button " + this._super();
   },
 
-  onClick: function(){
-    this.player.play();
-  }
-
-});
-
-/* Pause Button
-================================================================================ */
-_V_.PauseButton = _V_.Button.extend({
-
-  buttonText: "Pause",
-
-  buildCSSClass: function(){
-    return "vjs-pause-button " + this._super();
+  setupToolTip: function () {
+    var that = this;
+    $(this.el).unbind('hover').hover(function () { that.showToolTip(); }, function () { that.hideToolTip(); });
+  },
+  
+  showToolTip: function () {
+    var that = this;
+    this.player.toolTipDelay = window.setTimeout(function () {
+      if (that.player.isFullScreen) {
+        that.player.fullScreenToolTips[that.name].show(that.buttonText);
+      } else {
+        that.player.normalToolTips[that.name].show(that.buttonText);
+      }
+    }, 1500);
   },
 
-  onClick: function(){
-    this.player.pause();
+  hideToolTip: function () {
+    var delay = this.player.toolTipDelay;
+    window.clearTimeout(delay);
+    if (this.player.isFullScreen) {
+      this.player.fullScreenToolTips[this.name].hide();
+    } else {
+      this.player.normalToolTips[this.name].hide();
+    }
+  },
+
+  updateButtonText: function (text) {
+    this.buttonText = text;
+    this.player.fullScreenToolTips[this.name].update(text);
+    this.player.normalToolTips[this.name].update(text);
   }
 
 });
+
 
 /* Play Toggle - Play or Pause Media
 ================================================================================ */
 _V_.PlayToggle = _V_.Button.extend({
+  name: 'play',
+
   init: function (player, options) {
     this._super(player, options);
     
     player.on('play',  _V_.proxy(this, this.onPlay));
     player.on('pause', _V_.proxy(this, this.onPause));
     player.on('ended', _V_.proxy(this, this.onEnded));
+    
+    this.setupToolTip();
   },
   
   buttonText: 'Abspielen',
@@ -363,13 +324,15 @@ _V_.PlayToggle = _V_.Button.extend({
 
   // OnClick - Toggle between play and pause
   onClick: function(){
-    if (this.player.paused()) {
+    console.log('play clicked');
+    if (this.player.paused() || state.isEnded) {
       if ($(this.el).hasClass("replay")) {
         if(this.player.currentTime()) {
           this.player.currentTime(0);
         }
       }
       this.player.play();
+      state.isEnded = false;
       if (!$(this.el).hasClass("vjs-play-control")) {
         this.player.triggerEvent("playclicked");
       }
@@ -401,17 +364,22 @@ _V_.PlayToggle = _V_.Button.extend({
   }
 });
 
-/* Timed Comments
+
+/* TimedComments
+================================================================================
 ================================================================================ */
 
+/* TimedCommentsController
+================================================================================ */
 _V_.TimedCommentsController = _V_.Class.extend({
   current: null,
   
   init: function (player, options) {
     this.player = player;
     
-    player.on('timeupdate', _V_.proxy(this, this.update));
-
+    player.on('timeupdate',       _V_.proxy(this, this.update));
+    player.on('fullscreenchange',       _V_.proxy(this, this.onFullscreenchange));
+    
     player.on('timedCommentsOn',  _V_.proxy(this, this.update));
     player.on('timedCommentsOff', _V_.proxy(this, this.update));
   },
@@ -420,7 +388,7 @@ _V_.TimedCommentsController = _V_.Class.extend({
     var candidates, winner = -1;
     
     if (this.player.isFullScreen) {
-      candidates = this.player.fullScreenTimedComments
+      candidates = this.player.fullScreenTimedComments;
     } else {
       candidates = this.player.normalTimedComments;
     }
@@ -437,40 +405,72 @@ _V_.TimedCommentsController = _V_.Class.extend({
     if (winner !== this.current) {
       // hide current
       if (this.current === 0 || this.current > 0) {
+        console.log(this.current);
+        console.log($(this.player.normalTimedComments[this.current].el));
         if (this.player.normalTimedComments[this.current]) {
-          $(this.player.normalTimedComments[this.current].el).stop(true, true).fadeOut();
+          $(this.player.normalTimedComments[this.current].el).stop(true, true).hide();
+          console.log("fadeout");
         }
         if (this.player.fullScreenTimedComments[this.current]) {
-          $(this.player.fullScreenTimedComments[this.current].el).stop(true, true).fadeOut();
+          $(this.player.fullScreenTimedComments[this.current].el).stop(true, true).hide();
+          console.log("fadeout");
         }
         this.player.trigger('hideTimedComment');
       }
        
       // display winner
       if (winner > -1) {
+
         this.current = winner;
+        $(candidates[winner].el).stop(true, true).fadeIn();
+        candidates[winner].position();
+        /*
         $(this.player.normalTimedComments[winner].el).stop(true, true).fadeIn();
         this.player.normalTimedComments[winner].position();
         $(this.player.fullScreenTimedComments[winner].el).stop(true, true).fadeIn();
         this.player.fullScreenTimedComments[winner].position();
+        */
         this.player.trigger('showTimedComment');
       } else {
         this.current = null;
       }
     }
+  },
+
+  onFullscreenchange: function () {
+    this.update();
   }
+
 });
 
+/* TimedComment
+================================================================================ */
 _V_.TimedComment = _V_.Component.extend({
   index: null,
-
+  
   overlap: 0,
-
+  
+  height: null,
+  
+  activated: true,
+  
+  visible: false,
+  
+  closed: false,
+  
+  initialPosition: 'half',
+  
+  below: false,
+  
+  requestDisplay: false,
+  
+  requestPrivilegedDisplay: false,
+  
   init: function (player, options, index) {
     var self = this;
     this._super(player, _V_.merge(options, { el: this.create(player, options) }));
     this.index = index;
-
+    
     $('.close', this.el).on('click', function() {
       self.close();
     });
@@ -489,19 +489,11 @@ _V_.TimedComment = _V_.Component.extend({
     
     player.on('halfControls',     _V_.proxy(this, this.configureHalf));
     player.on('fullControls',     _V_.proxy(this, this.configureFull));
-    player.on('noControls',        _V_.proxy(this, this.configureHalf));
+    player.on('noControls',       _V_.proxy(this, this.configureHalf));
   },
   
   create: function (player, options) {
     var flag = null, pos = 100 * options.timed_comment.time / player.options.expectedDuration;
-    
-    if (options.timed_comment.user.producer) {
-      flag = 'tutor';
-    } else if (options.timed_comment.user.category_manager) {
-      flag = 'editorial';
-    } else if (options.timed_comment.user.team) {
-      flag = 'team';
-    }
     
     return $('<div id="timed-comment-' + options.timed_comment.id + '" class="timed-comment" style="display: none; left: ' + pos + '%"> \
                  <div class="content"> \
@@ -518,19 +510,10 @@ _V_.TimedComment = _V_.Component.extend({
                </div>').get();
   },
   
-  activated: true,
-  
-  visible: false,
-  
-  closed: false,
-  
-  posBottom: 20,
-  
-  below: false,
-  
-  requestDisplay: false,
-  
-  requestPrivilegedDisplay: false,
+  setupHeight: function () {
+    this.height = $(this.el).show().find('.content').height();
+    $(this.el).hide();
+  },
   
   activate: function () {
     this.activated = true;
@@ -543,17 +526,17 @@ _V_.TimedComment = _V_.Component.extend({
   },
   
   configureHalf: function () {
-    this.posBottom = this.below ? 10 : 25;
+    this.initialPosition = 'half';
   },
   
   configureFull: function () {
-    this.posBottom = this.below ? 30 : 49;
+    this.initialPosition = 'full';
   },
   
   update: function (condition) {
     var delta = this.player.currentTime() - this.options.timed_comment.time;
     
-    if (delta >= -1 && delta < 5 && this.activated && condition) {
+    if (delta >= 0 && delta < 5 && this.activated && condition) {
       if (!this.visible && !this.closed) {
         this.show(false);
       }
@@ -564,52 +547,57 @@ _V_.TimedComment = _V_.Component.extend({
   
   show: function (privileged, overlap) {
     this.overlap = overlap;
-    //var posLeft, posRight, posBottom = this.posBottom, contentLeft = -330;
     
     if (privileged) {
       this.requestPrivilegedDisplay = true;
     } else {
       this.requestDisplay = true;
     }
-    //$(this.el).stop(true, true).fadeIn();
-    /*
-    posLeft  = $(this.el).position().left;
-    posRight = $(this.el).position().right;
     
-    if (posLeft < 320) {
-      contentLeft = (posLeft + overlap) * -1
-    } else if (posRight < 320) {
-      contentLeft = posRight + overlap - 660
-    }
-    
-    $('.content', this.el).css('left', contentLeft + 'px');
-    $(this.el).css('bottom', posBottom + 'px');
-    */
-    //this.player.trigger('showTimedComment');
     this.visible = true;
   },
-
+  
   position: function () {
-    var posLeft, posRight, posBottom = this.posBottom, contentLeft = -330, availableSpaceBelow;
+    var posLeft, posRight, posBottom, initialPosition = this.initialPosition, height = this.height, contentLeft = -330, availableSpaceBelow, correction;
+    correction = this.player.isFullScreen ? 7 : 4;
     posLeft  = $(this.el).position().left;
-    posRight = $(this.player.el).width() - posLeft;
+    posRight = $(this.player.el).width() - posLeft - 2 * correction;
     
-    if (posLeft < 320) {
+    if (posLeft < (320 - correction)) {
       contentLeft = (posLeft + this.overlap) * -1
-    } else if (posRight < 320) {
+    } else if (posRight < (320 - correction)) {
       contentLeft = posRight + this.overlap - 660
     }
     
-    $('.content', this.el).css('left', contentLeft + 'px');
-    $(this.el).css('bottom', posBottom + 'px');
-  
     availableSpaceBelow = $(window).scrollTop() + $(window).innerHeight() - $(this.player.el).offset().top - $(this.player.el).height();
-    if (availableSpaceBelow > 100 && !this.player.isFullScreen) {
+    if (availableSpaceBelow > (height + 20) && !this.player.isFullScreen) {
       this.below = true;
       $(this.el).addClass('below');
     } else {
       this.below = false;
       $(this.el).removeClass('below');
+    }
+    
+    $('.content', this.el).css({ 'left': contentLeft + 'px', 'height': height + 'px' });
+    
+    if (initialPosition === 'half') {
+      if (this.below) {
+        posBottom = -18;
+      } else {
+        posBottom = 24;
+      }
+    } else {
+      if (this.below) {
+        posBottom = -6;
+      } else {
+        posBottom = 53;
+      }
+    }
+    
+    $(this.el).css('bottom', posBottom + 'px');
+    
+    if (!this.below) {
+      $('.content', this.el).css('bottom', height + 'px');
     }
   },
   
@@ -617,9 +605,7 @@ _V_.TimedComment = _V_.Component.extend({
     this.requestDisplay = false;
     this.requestPrivilegedDisplay = false;
     this.player.timedCommentsController.update();
-    //$(this.el).fadeOut();
     
-    //this.player.trigger('hideTimedComment');
     this.visible = false;
   },
   
@@ -633,20 +619,24 @@ _V_.TimedComment = _V_.Component.extend({
   },
   
   up: function () {
-    var bottom = this.below ? '30px' : '49px';
+    var bottom = this.below ? '-6px' : '53px';
     $(this.el).stop(true, true).animate({ bottom: bottom }, 500);
   },
   
   down: function () {
-    var bottom = this.below ? '10px' : '25px';
+    var bottom = this.below ? '-18px' : '24px';
     $(this.el).stop(true, true).animate({ bottom: bottom }, 500);
   }
 });
 
+/* NormalTimedComment
+================================================================================ */
 _V_.NormalTimedComment = _V_.TimedComment.extend({
   init: function (player, options, index) {
     this._super(player, options, index);
     $(player.el).parent().append(this.el);
+    $(this.el).wrap('<div class="timed-comment-wrapper" />');
+    this.setupHeight();
   },
   
   update: function () {
@@ -654,14 +644,18 @@ _V_.NormalTimedComment = _V_.TimedComment.extend({
   },
   
   show: function (privileged) {
-    this._super(privileged, 10);
+    this._super(privileged, 14);
   }
 });
 
+/* FullScreenTimedComment
+================================================================================ */
 _V_.FullScreenTimedComment = _V_.TimedComment.extend({
   init: function (player, options, index) {
     this._super(player, options, index);
     $(player.el).append(this.el);
+    $(this.el).wrap('<div class="timed-comment-wrapper" />');
+    this.setupHeight();
   },
   
   update: function () {
@@ -669,10 +663,12 @@ _V_.FullScreenTimedComment = _V_.TimedComment.extend({
   },
   
   show: function (privileged) {
-    this._super(privileged, 5);
+    this._super(privileged, 12);
   }
 });
 
+/* TimedCommentDot
+================================================================================ */
 _V_.TimedCommentDot = _V_.Component.extend({
   index: null,
   
@@ -698,72 +694,85 @@ _V_.TimedCommentDot = _V_.Component.extend({
   }
 });
 
+/* NormalTimedCommentDot
+================================================================================ */
 _V_.NormalTimedCommentDot = _V_.TimedCommentDot.extend({
   init: function (player, options, index) {
-    var self = this;
-    var delay = null;
+    var that = this, delay = null;
     this._super(player, options, index);
     
-    $('.vjs-progress-holder', $(player.el).parent()).append(this.el);
+    $(player.el).parent().find('.vjs-seek-handle-wrapper').eq(1).append(this.el);
     
     $(this.el).hover(function () {
       delay = window.setTimeout(function () {
-        player.normalTimedComments[self.index].requestPrivilegedDisplay = true;
+        player.normalTimedComments[that.index].requestPrivilegedDisplay = true;
+        player.normalTimedComments[that.index].overlap = 14;
         player.timedCommentsController.update();
       }, 1000);
     },
     function () {
       window.clearTimeout(delay);
-      player.normalTimedComments[self.index].requestPrivilegedDisplay = false;
+      player.normalTimedComments[that.index].requestPrivilegedDisplay = false;
       player.timedCommentsController.update();
     });
   }
 });
 
+/* FullScreenTimedCommentDot
+================================================================================ */
 _V_.FullScreenTimedCommentDot = _V_.TimedCommentDot.extend({
   init: function (player, options, index) {
-    var self = this;
-    var delay = null;
+    var that = this, delay = null;
     this._super(player, options, index);
     
-    $('.vjs-progress-holder', $(player.el)).append(this.el);
+    $('.vjs-seek-handle-wrapper', $(player.el)).append(this.el);
     
     $(this.el).hover(function () {
       delay = window.setTimeout(function () {
-        player.fullScreenTimedComments[self.index].requestPrivilegedDisplay = true;
+        player.fullScreenTimedComments[that.index].requestPrivilegedDisplay = true;
+        player.fullScreenTimedComments[that.index].overlap = 12;
         player.timedCommentsController.update();
       }, 1000);
     },
     function () {
       window.clearTimeout(delay);
-      player.fullScreenTimedComments[self.index].requestPrivilegedDisplay = false;
+      player.fullScreenTimedComments[that.index].requestPrivilegedDisplay = false;
       player.timedCommentsController.update();
     });
   }
 });
 
-
+/* TimedCommentsToggle
+================================================================================ */
 _V_.TimedCommentsToggle = _V_.Button.extend({
+  // tooltip id
+  name: 'comments',
+  
+  timedComments: 'on',
+  
   init: function (player, options) {
     this._super(player, options);
+    this.setupToolTip();
+    if (player.options.timedComments && player.options.timedComments.length > 0) {
+      $(this.el).show();
+    }
   },
   
-  visible: true,
-  
+  // tooltip
   buttonText: 'Kommentare aus',
   
-  buildCSSClass: function(){
-    return 'vjs-timed-comments-control ' + this._super();
+  buildCSSClass: function() {
+    return 'vjs-timed-comments-toggle ' + this._super();
   },
   
-  onClick: function(){
-    if (this.visible) {
-      this.visible = false;
+  onClick: function() {
+    if (this.timedComments === 'on') {
+      this.timedComments = 'off';
       this.player.trigger('timedCommentsOff');
       this.updateButtonText('Kommentare an');
       $(this.el).addClass('off');
     } else {
-      this.visible = true;
+      this.timedComments = 'on';
       this.player.trigger('timedCommentsOn');
       this.updateButtonText('Kommentare aus');
       $(this.el).removeClass('off');
@@ -771,13 +780,70 @@ _V_.TimedCommentsToggle = _V_.Button.extend({
   }
 });
 
+/* ToolTips
+================================================================================
+================================================================================ */
+
+/* ToolTip
+================================================================================ */
+_V_.ToolTip = _V_.Component.extend({
+  delay: null,
+  
+  init: function (player, options) {
+    this._super(player, _V_.merge(options, { el: this.create(player, options) }));
+    
+    player.on('noControls', _V_.proxy(this, this.hide));
+  },
+  
+  create: function (player, options) {
+    return $('<div class="vjs-tooltip ' + options.name + '-tooltip"><div class="text"></div><div class="tip"></div>').get();
+  },
+  
+  show: function (text) {
+    $(this.el).find('.text').text(text).parent().fadeIn();
+  },
+  
+  hide: function (fast) {
+    var delay = this.player.toolTipDelay;
+    window.clearTimeout(delay);
+    $(this.el)[fast ? 'hide' : 'fadeOut']();
+  },
+  
+  update: function (text) {
+    $(this.el).find('.text').text(text);
+  }
+});
+
+/* NormalToolTip
+================================================================================ */
+_V_.NormalToolTip = _V_.ToolTip.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    $(player.el).parent().append(this.el);
+  }
+});
+
+/* FullScreenToolTip
+================================================================================ */
+_V_.FullScreenToolTip = _V_.ToolTip.extend({
+  init: function (player, options) {
+    this._super(player, options);
+    $(player.el).append(this.el);
+  }
+});
+
+
 /* Fullscreen Toggle Behaviors
 ================================================================================ */
 _V_.FullscreenToggle = _V_.Button.extend({
+  name: 'fullScreen',
+  
   init: function (player, options) {
     this._super(player, options);
     player.on('showPostroll', _V_.proxy(this, this.disable));
     player.on('hidePostroll', _V_.proxy(this, this.enable));
+
+    this.setupToolTip();
   },
 
   enabled: true,
@@ -792,9 +858,15 @@ _V_.FullscreenToggle = _V_.Button.extend({
     if (this.enabled) {
       if (!this.player.isFullScreen) {
         this.player.requestFullScreen();
+        console.log(this.player.normalToolTips['fullScreen']);
+        this.player.normalToolTips['fullScreen'].hide(true);
+        this.player.fullScreenToolTips['fullScreen'].hide(true);
         this.updateButtonText("Vollbild verlassen");
       } else {
         this.player.cancelFullScreen();
+        console.log(this.player.fullScreenToolTips['fullScreen']);
+        this.player.fullScreenToolTips['fullScreen'].hide(true);
+        this.player.normalToolTips['fullScreen'].hide(true);
         this.updateButtonText("Vollbild");
       }
     }
@@ -803,15 +875,19 @@ _V_.FullscreenToggle = _V_.Button.extend({
   disable: function(){
     this.enabled = false;
     $(this.el).removeClass('enabled');
+    $(this.el).unbind('hover');
   },
 
   enable: function(){
     this.enabled = true;
     $(this.el).addClass('enabled');
+    this.setupToolTip();
   }
 
 });
 
+
+/* sofatutor logo **********************************************************************/
 _V_.UpperRightLogo = _V_.Button.extend({
   init: function (player, options) {
     this._super(player, options);
@@ -836,6 +912,21 @@ _V_.UpperRightLogo = _V_.Button.extend({
   }
 });
 
+_V_.ClickLayer = _V_.Button.extend({
+  init: function (player, options) {
+    this._super(player, options);
+  },
+  createElement: function () {
+    return this._super("div", {
+        className: "vjs-click-layer",
+        innerHTML: ""
+    })
+  },
+  onClick: function () {
+    this.player.triggerEvent("screenclicked");
+  }
+});
+
 
 _V_.BigPlayToggle = _V_.Button.extend({
   init: function (player, options) {
@@ -847,6 +938,7 @@ _V_.BigPlayToggle = _V_.Button.extend({
   createElement: function () {
     return _V_.createElement("img", {
       className: "vjs-big-play-toggle",
+      src: "/images/new_images/player/big_play_icon.png",
       style: "display: none"
     })
   },
@@ -952,8 +1044,9 @@ _V_.Postroll = _V_.Component.extend({
   },
 
   show: function(){
-    if (this.player.isFullScreen)
+    if (this.player.isFullScreen) {
       this.player.cancelFullScreen();
+    }
     $(this.el).show();
     this.player.triggerEvent("showPostroll");
   },
@@ -988,7 +1081,7 @@ _V_.TimeDisplay = _V_.Component.extend({
 
     this.duration = _V_.createElement("span", {
       className: "vjs-duration-display",
-      innerHTML: "0:00"
+      innerHTML: this.player.options.expectedDuration ? _V_.formatTime(this.player.options.expectedDuration) : "0:00"
     });
 
     el.appendChild(_V_.createElement("div").appendChild(this.currentTime));
@@ -1001,7 +1094,7 @@ _V_.TimeDisplay = _V_.Component.extend({
     var time = (this.player.scrubbing) ? this.player.values.currentTime : this.player.currentTime();
     this.currentTime.innerHTML = _V_.formatTime(time, this.player.duration())
 
-    if (this.player.duration()) {
+    if (this.player.duration() && !this.player.options.expectedDuration) {
       this.duration.innerHTML = _V_.formatTime(this.player.duration())
     }
   }
@@ -1256,16 +1349,21 @@ _V_.Slider = _V_.Component.extend({
 
 // Progress Control: Seek, Load Progress, and Play Progress
 _V_.ProgressControl = _V_.Component.extend({
+  fullscreen: false,
+
   init: function(player, options){
     this.player = player;
     this.el = $('<div class="vjs-progress-control vjs-control"></div>').get();
     if (options && options === 'fullScreen') {
       $(player.el).append(this.el);
+      this.fullscreen = true;
     } else {
       $(player.el).parent().append(this.el);
     }
     $(this.el).bind('mouseenter', this.proxy(this.enterProgressControls));
     $(this.el).bind('mouseleave', this.proxy(this.leaveProgressControls));
+    player.on('fullscreenchange', this.proxy(this.update));
+    player.on('play', this.proxy(this.update));
   },
 
   options: {
@@ -1279,14 +1377,30 @@ _V_.ProgressControl = _V_.Component.extend({
       className: "vjs-progress-control vjs-control"
     });
   },
+
   enterProgressControls: function() {
     this.player.trigger('lockControls');
   },
   
   leaveProgressControls: function() {
     this.player.trigger('unlockControls');
-  }
+  },
 
+  update: function () {
+    if (this.fullscreen) {
+      if (this.player.isFullScreen) {
+        $(this.el).css('visibility', 'visible');
+      } else {
+        $(this.el).css('visibility', 'hidden');
+      }
+    } else {
+      if (this.player.isFullScreen) {
+        $(this.el).css('visibility', 'hidden');
+      } else {
+        $(this.el).css('visibility', 'visible');
+      }
+    }
+  }
 });
 
 // Seek Bar and holder for the progress bars
@@ -1311,6 +1425,7 @@ _V_.SeekBar = _V_.Slider.extend({
     } else {
       $('.vjs-progress-control', $(player.el).parent()).eq(0).append(this.el);
     }
+    $(this.handle.el).wrap('<div class="vjs-seek-handle-wrapper" />');
   },
 
   createElement: function(){
@@ -1401,25 +1516,12 @@ _V_.SeekHandle = _V_.Component.extend({
 
   init: function(player, options){
     this._super(player, options);
-    player.on('timeupdate', _V_.proxy(this, this.update));
-    $(this.el).hover(function() {
-      $(".vjs-control-text", this).fadeToggle();
-    });
   },
 
   createElement: function(){
     return this._super("div", {
-      className: "vjs-seek-handle",
-      innerHTML: '<span class="vjs-control-text">00:00</span>'
+      className: "vjs-seek-handle"
     });
-  },
-
-  update: function(){
-    var time = parseInt(this.player.currentTime());
-    var minutes = parseInt(time / 60);
-    var seconds = time % 60;
-    var timeString = (minutes > 9 ? minutes.toString() : '0' + minutes.toString()) + ':' + (seconds > 9 ? seconds.toString() : '0' + seconds.toString());
-    this.updateButtonText(timeString);
   }
 
 });
@@ -1518,11 +1620,11 @@ _V_.MuteToggle = _V_.Button.extend({
 
   onClick: function(event){
     if (this.player.muted()) {
-      this.updateButtonText("Mute");
+      //this.updateButtonText("Mute");
       this.player.muted(false);
       this.player.volume(userVolume);
     } else {
-      this.updateButtonText("Unmute");
+      //this.updateButtonText("Unmute");
       userVolume = this.player.volume();
       this.player.muted(true);
       this.player.volume(0);
@@ -1625,4 +1727,3 @@ _V_.MenuItem = _V_.Button.extend({
     this.selected(true);
   }
 });
-

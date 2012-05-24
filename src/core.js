@@ -68,6 +68,7 @@ VideoJS.options = {
   // Included control sets
   components: {
     "posterImage": {},
+    "clickLayer" : {},
     "textTrackDisplay": {},
     "loadingSpinner": {},
     "upperRightLogo": {},

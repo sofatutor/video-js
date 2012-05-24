@@ -83,7 +83,33 @@ _V_.Player = _V_.Component.extend({
         this.initComponents();
       });
     }
-
+    
+    var userActiveTimer, userIsActive = false, that = this;
+    
+    $(this.el).parent().bind('mouseenter', function () {
+      userIsActive = true;
+      that.trigger('userActive');
+    });
+    
+    $(this.el).parent().bind('mouseleave', function () {
+      if (!state.isDragging) {
+        clearTimeout(userActiveTimer);
+        that.trigger('userInactive');
+      }
+    });
+    
+    $(this.el).parent().bind('mousemove click', function () {
+      if (!userIsActive) {
+        userIsActive = true;
+        that.trigger('userActive');
+      }
+      clearTimeout(userActiveTimer);
+      userActiveTimer = setTimeout(function() {
+        userIsActive = false;
+        that.trigger('userInactive');
+      }, 10000);
+    });
+    
     this.ready(function () {
       new _V_.ProgressControl(this);
       new _V_.SeekBar(this);
@@ -108,6 +134,22 @@ _V_.Player = _V_.Component.extend({
       }
     });
 
+    // Tooltips
+    this.toolTipDelay = null;
+    this.normalToolTips = {};
+    this.fullScreenToolTips = {};
+    this.ready(function () {
+      var player = this;
+      $.each(['play', 'comments', 'fullScreen'], function (index, name) {
+        player.normalToolTips[name] = new _V_.NormalToolTip(player, { name: name });
+        player.fullScreenToolTips[name] = new _V_.FullScreenToolTip(player, { name: name });
+      });
+    });
+    
+    this.on('play',  this.options.videoViewTracker.start);
+    this.on('pause', this.options.videoViewTracker.stop);
+    this.on('ended', this.options.videoViewTracker.stop);
+    
     // Tracks defined in tracks.js
     this.textTracks = [];
     if (options.tracks && options.tracks.length > 0) {
@@ -142,7 +184,7 @@ _V_.Player = _V_.Component.extend({
     _V_.players[this.id] = null;
     delete _V_.players[this.id];
     this.tech.destroy();
-    this.el.parentNode.removeChild(this.el);
+    $(this.el).parent().parent().find('.vjs-player').remove();
   },
 
   createElement: function(type, options){},
@@ -631,10 +673,14 @@ _V_.Player = _V_.Component.extend({
       } else {
         this.el[requestFullScreen.requestFn]();
       }
+      // Apply fullscreen styles
+      _V_.addClass(this.el, "vjs-fullscreen");
 
     } else if (this.tech.supportsFullScreen()) {
       this.trigger("fullscreenchange");
       this.techCall("enterFullScreen");
+      // Apply fullscreen styles
+      _V_.addClass(this.el, "vjs-fullscreen");
 
     } else {
       this.trigger("fullscreenchange");
@@ -669,10 +715,14 @@ _V_.Player = _V_.Component.extend({
      } else {
        document[requestFullScreen.cancelFn]();
      }
+      // Remove fullscreen styles
+      _V_.removeClass(this.el, "vjs-fullscreen");
 
     } else if (this.tech.supportsFullScreen()) {
      this.techCall("exitFullScreen");
      this.trigger("fullscreenchange");
+      // Remove fullscreen styles
+      _V_.removeClass(this.el, "vjs-fullscreen");
 
     } else {
      this.exitFullWindow();
@@ -694,6 +744,11 @@ _V_.Player = _V_.Component.extend({
 
     // Hide any scroll bars
     document.documentElement.style.overflow = 'hidden';
+    
+    // Hide conflicting page elements
+    if (this.options.hideOnFullWindow) {
+      $(this.options.hideOnFullWindow).hide();
+    }
 
     // Apply fullscreen styles
     _V_.addClass(document.body, "vjs-full-window");
