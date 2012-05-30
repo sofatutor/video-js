@@ -52,8 +52,6 @@ _V_.ControlBar = _V_.Component.extend({
       
       this.player.on('lockControls',     this.proxy(this.lockControls));
       this.player.on('unlockControls',   this.proxy(this.unlockControls));
-      
-      this.player.trigger('userActive');
     }));
   },
   
@@ -193,12 +191,13 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   fullDown: function () {
+    var player = this.player;
     $(this.el).clearQueue('buttons').queue('buttons', function() {
       $(this).animate({ bottom: '-29px' }, { duration: 500, queue: false });
     }).dequeue('buttons');
     
     $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
-      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control', $(this.player.el).parent()).dequeue('progress') } } );
+      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control', $(player.el).parent()).dequeue('progress') } } );
     }).queue('progress', function() {
       $(this).animate({ opacity: '0' }, { queue: false });
     }).dequeue('progress');
@@ -405,15 +404,15 @@ _V_.TimedCommentsController = _V_.Class.extend({
     if (winner !== this.current) {
       // hide current
       if (this.current === 0 || this.current > 0) {
-        console.log(this.current);
-        console.log($(this.player.normalTimedComments[this.current].el));
         if (this.player.normalTimedComments[this.current]) {
-          $(this.player.normalTimedComments[this.current].el).stop(true, true).hide();
-          console.log("fadeout");
+          $(this.player.normalTimedComments[this.current].el).stop(true, true).animate({ opacity: 0 }, { duration: 500, complete: function () {
+            $(this).hide();
+          } });
         }
         if (this.player.fullScreenTimedComments[this.current]) {
-          $(this.player.fullScreenTimedComments[this.current].el).stop(true, true).hide();
-          console.log("fadeout");
+          $(this.player.fullScreenTimedComments[this.current].el).stop(true, true).animate({ opacity: 0 }, { duration: 500, complete: function () {
+            $(this).hide();
+          } });
         }
         this.player.trigger('hideTimedComment');
       }
@@ -422,7 +421,7 @@ _V_.TimedCommentsController = _V_.Class.extend({
       if (winner > -1) {
 
         this.current = winner;
-        $(candidates[winner].el).stop(true, true).fadeIn();
+        $(candidates[winner].el).show().animate({ opacity: 1 }, 500);
         candidates[winner].position();
         /*
         $(this.player.normalTimedComments[winner].el).stop(true, true).fadeIn();
@@ -456,8 +455,6 @@ _V_.TimedComment = _V_.Component.extend({
   
   visible: false,
   
-  closed: false,
-  
   initialPosition: 'half',
   
   below: false,
@@ -467,19 +464,16 @@ _V_.TimedComment = _V_.Component.extend({
   requestPrivilegedDisplay: false,
   
   init: function (player, options, index) {
-    var self = this;
+    var that = this;
     this._super(player, _V_.merge(options, { el: this.create(player, options) }));
     this.index = index;
     
     $('.close', this.el).on('click', function() {
-      self.close();
+      that.close();
     });
     
     player.on('timeupdate',       _V_.proxy(this, this.update));
     player.on('fullscreenchange', _V_.proxy(this, this.update));
-    
-    player.on('timedCommentsOn',  _V_.proxy(this, this.reset));
-    player.on('ended',            _V_.proxy(this, this.reset));
     
     player.on('timedCommentsOn',  _V_.proxy(this, this.activate));
     player.on('timedCommentsOff', _V_.proxy(this, this.deactivate));
@@ -491,11 +485,11 @@ _V_.TimedComment = _V_.Component.extend({
     player.on('fullControls',     _V_.proxy(this, this.configureFull));
     player.on('noControls',       _V_.proxy(this, this.configureHalf));
   },
-  
+
   create: function (player, options) {
     var flag = null, pos = 100 * options.timed_comment.time / player.options.expectedDuration;
     
-    return $('<div id="timed-comment-' + options.timed_comment.id + '" class="timed-comment" style="display: none; left: ' + pos + '%"> \
+    return $('<div id="timed-comment-' + options.timed_comment.id + '" class="timed-comment" style="display: none; opacity: 0; left: ' + pos + '%"> \
                  <div class="content"> \
                    <div class="user"> \
                      <img src="' + options.timed_comment.user.avatar_url + '" width="45" height="45" />' + (options.timed_comment.user.avatar_flag.length > 0 ? '<div class="flag ' + options.timed_comment.user.avatar_flag + '"></div>' : '') + ' \
@@ -536,11 +530,11 @@ _V_.TimedComment = _V_.Component.extend({
   update: function (condition) {
     var delta = this.player.currentTime() - this.options.timed_comment.time;
     
-    if (delta >= 0 && delta < 5 && this.activated && condition) {
-      if (!this.visible && !this.closed) {
+    if (delta >= 0 && delta < 0.75 && this.activated && condition) {
+      if (!this.visible) {
         this.show(false);
       }
-    } else if (this.visible) {
+    } else if (this.visible && (!(delta >= 0 && delta < 5) || !this.activated)) {
       this.hide();
     }
   },
@@ -607,15 +601,6 @@ _V_.TimedComment = _V_.Component.extend({
     this.player.timedCommentsController.update();
     
     this.visible = false;
-  },
-  
-  close: function () {
-    this.closed = true;
-    this.hide();
-  },
-  
-  reset: function () {
-    this.closed = false;
   },
   
   up: function () {
@@ -858,13 +843,11 @@ _V_.FullscreenToggle = _V_.Button.extend({
     if (this.enabled) {
       if (!this.player.isFullScreen) {
         this.player.requestFullScreen();
-        console.log(this.player.normalToolTips['fullScreen']);
         this.player.normalToolTips['fullScreen'].hide(true);
         this.player.fullScreenToolTips['fullScreen'].hide(true);
         this.updateButtonText("Vollbild verlassen");
       } else {
         this.player.cancelFullScreen();
-        console.log(this.player.fullScreenToolTips['fullScreen']);
         this.player.fullScreenToolTips['fullScreen'].hide(true);
         this.player.normalToolTips['fullScreen'].hide(true);
         this.updateButtonText("Vollbild");
@@ -873,7 +856,7 @@ _V_.FullscreenToggle = _V_.Button.extend({
   },
 
   disable: function(){
-    if (!(_V_.isFF() && !this.player.currentSrc().match(/webm/)) ) {
+    if (!_V_.isFF()) {
       this.enabled = false;
       $(this.el).removeClass('enabled');
       $(this.el).unbind('hover');
@@ -1046,7 +1029,7 @@ _V_.Postroll = _V_.Component.extend({
   },
 
   show: function(){
-    if (this.player.isFullScreen && !(_V_.isFF() && !this.player.currentSrc().match(/webm/)) ) {
+    if (this.player.isFullScreen && !_V_.isFF()) {
       this.player.cancelFullScreen();
     }
     $(this.el).show();

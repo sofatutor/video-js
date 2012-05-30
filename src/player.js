@@ -650,9 +650,13 @@ _V_.Player = _V_.Component.extend({
       _V_.on(document, requestFullScreen.eventName, this.proxy(function(){
         this.isFullScreen = document[requestFullScreen.isFullScreen];
 
+        if (this.isFullScreen) {
+          _V_.addClass(this.el, "vjs-fullscreen");
+        }
         // If cancelling fullscreen, remove event listener.
-        if (this.isFullScreen == false) {
+        if (!isFullScreen) {
           _V_.removeEvent(document, requestFullScreen.eventName, arguments.callee);
+          _V_.removeClass(this.el, "vjs-fullscreen");
         }
 
         this.trigger("fullscreenchange");
@@ -675,8 +679,6 @@ _V_.Player = _V_.Component.extend({
       } else {
         this.el[requestFullScreen.requestFn]();
       }
-      // Apply fullscreen styles
-      _V_.addClass(this.el, "vjs-fullscreen");
 
     } else if (this.tech.supportsFullScreen()) {
       this.trigger("fullscreenchange");
@@ -719,6 +721,7 @@ _V_.Player = _V_.Component.extend({
      }
       // Remove fullscreen styles
       _V_.removeClass(this.el, "vjs-fullscreen");
+      this.trigger("fullscreenchange");
 
     } else if (this.tech.supportsFullScreen()) {
      this.techCall("exitFullScreen");
@@ -774,6 +777,11 @@ _V_.Player = _V_.Component.extend({
 
     // Unhide scroll bars.
     document.documentElement.style.overflow = this.docOrigOverflow;
+
+    // Unhide conflicting page elements
+    if (this.options.hideOnFullWindow) {
+      $(this.options.hideOnFullWindow).show();
+    }
 
     // Remove fullscreen styles
     _V_.removeClass(document.body, "vjs-full-window");

@@ -183,7 +183,7 @@ _V_.extend({
         parent = elem.parentNode || elem.ownerDocument,
         type = event.type || event,
         handler;
-    console.log(type); // TODO: for debugging
+    //console.log(type); // TODO: for debugging
 
     if (data) { handler = data.handler }
 
