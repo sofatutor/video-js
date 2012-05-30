@@ -469,7 +469,7 @@ _V_.TimedComment = _V_.Component.extend({
     this.index = index;
     
     $('.close', this.el).on('click', function() {
-      that.close();
+      that.hide();
     });
     
     player.on('timeupdate',       _V_.proxy(this, this.update));

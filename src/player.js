@@ -278,6 +278,10 @@ _V_.Player = _V_.Component.extend({
     if (source) {
       if (source.src == this.values.src && this.values.currentTime > 0) {
         techOptions.startTime = this.values.currentTime;
+      } else if (source.src == this.values.src && _V_.isFF()) {
+        // in FF+Flash currentTime is always set to 0 (somehow)
+        // workaround is to set startTime to beginning (0 would evaluate as false)
+        techOptions.startTime = 0.1;
       }
 
       this.values.src = source.src;
@@ -654,7 +658,7 @@ _V_.Player = _V_.Component.extend({
           _V_.addClass(this.el, "vjs-fullscreen");
         }
         // If cancelling fullscreen, remove event listener.
-        if (!isFullScreen) {
+        if (!this.isFullScreen) {
           _V_.removeEvent(document, requestFullScreen.eventName, arguments.callee);
           _V_.removeClass(this.el, "vjs-fullscreen");
         }
