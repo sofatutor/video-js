@@ -85,6 +85,8 @@ _V_.Player = _V_.Component.extend({
     }
     
     var userActiveTimer, userIsActive = false, that = this;
+
+    $(this.el).append($('<div class="vjs-controls-animation-reference"></div>'));
     
     $(this.el).parent().bind('mouseenter', function () {
       userIsActive = true;

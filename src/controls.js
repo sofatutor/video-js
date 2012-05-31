@@ -153,26 +153,31 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   secondHalfUp: function () {
-    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
-      $(this).stop().show().animate({ bottom: '29px' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
-    }).dequeue('progress');
-
-    $(this.el).clearQueue('buttons').queue('buttons', function() {
-      $(this).animate({ bottom: '0' }, { duration: 500, queue: false });
-    }).dequeue('buttons');
-
+    var controlBar = $(this.el);
+    var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
+    $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
+      $(this).animate({ bottom: '29px' }, { duration: 500, queue: false, step: function (current) {
+        console.log(progressBar, controlBar);
+        progressBar.css('bottom', Math.round(current) + 'px');
+        controlBar.css('bottom', Math.round(current - 29) + 'px');
+      } });
+    }).dequeue('controls');
+    
     this.player.trigger('timedCommentUp');
   },
   
   secondHalfDown: function () {
-    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
-      $(this).stop().show().animate({ bottom: '0' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
-    }).dequeue('progress');
-
-    $(this.el).clearQueue('buttons').queue('buttons', function() {
-      $(this).animate({ bottom: '-29px' }, { duration: 500, queue: false });
-    }).dequeue('buttons');
-
+    var player = this.player;
+    var controlBar = $(this.el);
+    var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
+    $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
+      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, step: function (current) {
+        console.log(progressBar, controlBar);
+        progressBar.css('bottom', Math.round(current) + 'px');
+        controlBar.css('bottom', Math.round(current - 29) + 'px');
+      } });
+    }).dequeue('controls');
+    
     this.player.trigger('timedCommentDown');
   },
   
@@ -181,26 +186,33 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   fullUp: function () {
-    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
-      $(this).stop().show().animate({ bottom: '29px' }, { duration: 500, queue: false }).animate({ opacity: '1' }, { duration: 500, queue: false });
-    }).dequeue('progress');
-    
-    $(this.el).clearQueue('buttons').queue('buttons', function() {
-      $(this).animate({ bottom: '0' }, { duration: 500, queue: false });
-    }).dequeue('buttons');
+    var controlBar = $(this.el);
+    $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
+      var progressBar = $('.vjs-progress-control', $(this).parent().parent());
+      progressBar.stop().show().animate( { opacity: '1' }, { duration: 500, queue: false });
+      $(this).animate({ bottom: '29px' }, { duration: 500, queue: false, step: function (current) {
+        console.log(progressBar, controlBar);
+        progressBar.css('bottom', Math.round(current) + 'px');
+        controlBar.css('bottom', Math.round(current - 29) + 'px');
+      } });
+    }).dequeue('controls');
   },
   
   fullDown: function () {
     var player = this.player;
-    $(this.el).clearQueue('buttons').queue('buttons', function() {
-      $(this).animate({ bottom: '-29px' }, { duration: 500, queue: false });
-    }).dequeue('buttons');
-    
-    $('.vjs-progress-control', $(this.player.el).parent()).clearQueue('progress').queue('progress', function() {
-      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, complete: function() { $('.vjs-progress-control', $(player.el).parent()).dequeue('progress') } } );
-    }).queue('progress', function() {
-      $(this).animate({ opacity: '0' }, { queue: false });
-    }).dequeue('progress');
+    var controlBar = $(this.el);
+    var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
+    $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
+      $(this).animate({ bottom: '0' }, { duration: 500, queue: false, step: function (current) {
+        console.log(progressBar, controlBar);
+        progressBar.css('bottom', Math.round(current) + 'px');
+        controlBar.css('bottom', Math.round(current - 29) + 'px');
+      }, complete: function () {
+        $('.vjs-controls-animation-reference', player.el).dequeue('controls');
+      } });
+    }).queue('controls', function () {
+      progressBar.animate({ opacity: '0' }, { duration: 500, queue: false });
+    }).dequeue('controls');
   },
   
   lockControls: function() {
