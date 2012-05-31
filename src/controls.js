@@ -122,14 +122,11 @@ _V_.ControlBar = _V_.Component.extend({
       }
       this.visible = 'full';
       this.player.trigger('fullControls');
-      console.log("full controls");
     } else if (mode === 'half') {
       if (!this.visible) {
         this.firstHalfUp();
-        console.log("first half up");
       } else if (this.visible === 'full') {
         this.secondHalfDown();
-        console.log("second half up");
       }
       this.visible = 'half';
       this.player.trigger('halfControls');
@@ -157,7 +154,6 @@ _V_.ControlBar = _V_.Component.extend({
     var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
     $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
       $(this).animate({ bottom: '29px' }, { duration: 500, queue: false, step: function (current) {
-        console.log(progressBar, controlBar);
         progressBar.css('bottom', Math.round(current) + 'px');
         controlBar.css('bottom', Math.round(current - 29) + 'px');
       } });
@@ -172,7 +168,6 @@ _V_.ControlBar = _V_.Component.extend({
     var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
     $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
       $(this).animate({ bottom: '0' }, { duration: 500, queue: false, step: function (current) {
-        console.log(progressBar, controlBar);
         progressBar.css('bottom', Math.round(current) + 'px');
         controlBar.css('bottom', Math.round(current - 29) + 'px');
       } });
@@ -191,7 +186,6 @@ _V_.ControlBar = _V_.Component.extend({
       var progressBar = $('.vjs-progress-control', $(this).parent().parent());
       progressBar.stop().show().animate( { opacity: '1' }, { duration: 500, queue: false });
       $(this).animate({ bottom: '29px' }, { duration: 500, queue: false, step: function (current) {
-        console.log(progressBar, controlBar);
         progressBar.css('bottom', Math.round(current) + 'px');
         controlBar.css('bottom', Math.round(current - 29) + 'px');
       } });
@@ -204,7 +198,6 @@ _V_.ControlBar = _V_.Component.extend({
     var progressBar = $('.vjs-progress-control', $(this.player.el).parent());
     $('.vjs-controls-animation-reference', this.player.el).clearQueue('controls').queue('controls', function () {
       $(this).animate({ bottom: '0' }, { duration: 500, queue: false, step: function (current) {
-        console.log(progressBar, controlBar);
         progressBar.css('bottom', Math.round(current) + 'px');
         controlBar.css('bottom', Math.round(current - 29) + 'px');
       }, complete: function () {
@@ -323,6 +316,7 @@ _V_.PlayToggle = _V_.Button.extend({
     player.on('play',  _V_.proxy(this, this.onPlay));
     player.on('pause', _V_.proxy(this, this.onPause));
     player.on('ended', _V_.proxy(this, this.onEnded));
+    player.on('seeking', _V_.proxy(this, this.onSeeking));
     
     this.setupToolTip();
   },
@@ -335,7 +329,6 @@ _V_.PlayToggle = _V_.Button.extend({
 
   // OnClick - Toggle between play and pause
   onClick: function(){
-    console.log('play clicked');
     if (this.player.paused() || state.isEnded) {
       if ($(this.el).hasClass("replay")) {
         if(this.player.currentTime()) {
@@ -372,6 +365,14 @@ _V_.PlayToggle = _V_.Button.extend({
     state.isEnded = true;
     this.updateButtonText("Erneut abspielen");
     $(this.el).removeClass("play pause").addClass("replay");
+  },
+
+  onSeeking: function () {
+    if (state.isEnded) {
+      state.isEnded = false;
+      this.updateButtonText("Abspielen");
+      $(this.el).removeClass("replay").addClass("play");
+    }
   }
 });
 
