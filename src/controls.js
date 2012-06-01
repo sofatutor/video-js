@@ -40,6 +40,8 @@ _V_.ControlBar = _V_.Component.extend({
   init: function(player, options){
     this._super(player, options);
     
+    this.player.on('posterclicked', this.proxy(this.userActive));
+    
     player.one('play', this.proxy(function () {
       $(this.el).bind('mouseenter',      this.proxy(this.enterControls));
       $(this.el).bind('mouseleave',      this.proxy(this.leaveControls));
@@ -52,6 +54,8 @@ _V_.ControlBar = _V_.Component.extend({
       
       this.player.on('lockControls',     this.proxy(this.lockControls));
       this.player.on('unlockControls',   this.proxy(this.unlockControls));
+      
+      this.player.on('ended',            this.proxy(this.update));
     }));
   },
   
@@ -85,7 +89,7 @@ _V_.ControlBar = _V_.Component.extend({
     // not visible
     if (!this.visible) {
       // user active -> full
-      if (this.userIsActive || this.locked) {
+      if (this.userIsActive || this.locked || this.player.ended()) {
         this.show('full');
       // user inactive, but timed comments -> half
       } else if (this.visibleTimedComments) {
@@ -94,7 +98,7 @@ _V_.ControlBar = _V_.Component.extend({
     // half visible
     } else if (this.visible === 'half') {
       // user active -> full
-      if (this.userIsActive || this.locked) {
+      if (this.userIsActive || this.locked || this.player.ended()) {
         this.show('full');
       // user inactive and no timed comments -> hide
       } else if (!this.visibleTimedComments) {
@@ -103,7 +107,7 @@ _V_.ControlBar = _V_.Component.extend({
     // fully visible
     } else {
       if (!this.userIsActive) {
-        if (!this.visibleTimedComments && !this.locked) {
+        if (!this.visibleTimedComments && !this.locked && !this.player.ended()) {
           this.hide();
         } else if (this.visibleTimedComments) {
           this.show('half');
