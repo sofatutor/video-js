@@ -3,6 +3,7 @@
 _V_.Player = _V_.Component.extend({
 
   init: function(tag, addOptions, ready){
+    var userActiveTimer, userIsActive = false, that = this;
 
     this.tag = tag; // Store the original tag used to set options
 
@@ -76,6 +77,11 @@ _V_.Player = _V_.Component.extend({
     this.on("pause", this.onPause);
     this.on("progress", this.onProgress);
     this.on("error", this.onError);
+    
+    this.on("severeError", this.onSevereError);
+    $(el).on('error', function() {
+      that.onSevereError();
+    });
 
     // When the API is ready, loop through the components and add to the player.
     if (options.controls) {
@@ -84,7 +90,6 @@ _V_.Player = _V_.Component.extend({
       });
     }
     
-    var userActiveTimer, userIsActive = false, that = this;
 
     $(this.el).append($('<div class="vjs-controls-animation-reference"></div>'));
     
@@ -434,8 +439,13 @@ _V_.Player = _V_.Component.extend({
 
   onError: function(e) {
     _V_.log("Video Error", e);
+  },
+  
+  onSevereError: function(e) {
+    _V_.log("Severe Video Error", e);
     _V_.showGeneralError("Video Error");
   },
+
 
 /* Player API
 ================================================================================ */
@@ -482,6 +492,7 @@ _V_.Player = _V_.Component.extend({
           if (e.name == "TypeError") {
             _V_.log("Video.js: " + method + " unavailable on "+this.techName+" playback technology element.", e);
             this.tech.isReady = false;
+            this.trigger('severeError');
 
           } else {
             _V_.log(e);

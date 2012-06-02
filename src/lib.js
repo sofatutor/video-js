@@ -287,7 +287,6 @@ _V_.extend({
 
   showGeneralError: function(msg){
     $('.vjs-general-error').show();
-    $('.vjs-general-error .details').html(msg);
   }
 });
 
