@@ -56,7 +56,7 @@ VideoJS.options = {
   // techOrder: ["flash","html5"],
 
   html5: {},
-  flash: { swf: "http://vjs.zencdn.net/c/video-js.swf" },
+  flash: { swf: "/flash/VideoJS.swf" },
 
   // Default of web browser is 300x150. Should rely on source width/height.
   width: 300,

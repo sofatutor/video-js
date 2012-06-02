@@ -286,6 +286,7 @@ _V_.extend({
   },
 
   showGeneralError: function(msg){
+    $('.vjs-progress-control').hide();
     $('.vjs-general-error').show();
   }
 });
