@@ -1,27 +1,10 @@
 /* Playback Technology - Base class for playback technologies
 ================================================================================ */
-_V_.PlaybackTech = _V_.Component.extend({
-  init: function(player, options){
-    // this._super(player, options);
-
-    // Make playback element clickable
-    // _V_.addEvent(this.el, "click", _V_.proxy(this, _V_.PlayToggle.prototype.onClick));
-
-    // this.addEvent("click", this.proxy(this.onClick));
-
-    // player.triggerEvent("techready");
-  },
-  // destroy: function(){},
-  // createElement: function(){},
-  onClick: function(){
-    /*if (this.player.options.controls) {
-      _V_.PlayToggle.prototype.onClick.call(this);
-    }*/
-  }
-});
+_V_.PlaybackTech = _V_.Component.extend({});
 
 // Create placeholder methods for each that warn when a method isn't supported by the current playback technology
 _V_.apiMethods = "play,pause,paused,currentTime,setCurrentTime,duration,buffered,volume,setVolume,muted,setMuted,width,height,supportsFullScreen,enterFullScreen,src,load,currentSrc,preload,setPreload,autoplay,setAutoplay,loop,setLoop,error,networkState,readyState,seeking,initialTime,startOffsetTime,played,seekable,ended,videoTracks,audioTracks,videoWidth,videoHeight,textTracks,defaultPlaybackRate,playbackRate,mediaGroup,controller,controls,defaultMuted".split(",");
+
 _V_.each(_V_.apiMethods, function(methodName){
   _V_.PlaybackTech.prototype[methodName] = function(){
     throw new Error("The '"+methodName+"' method is not available on the playback technology's API");
@@ -36,8 +19,6 @@ _V_.html5 = _V_.PlaybackTech.extend({
     this.player = player;
     this.el = this.createElement();
     this.ready(ready);
-
-    this.addEvent("click", this.proxy(this.onClick));
 
     var source = options.source;
 
@@ -65,12 +46,6 @@ _V_.html5 = _V_.PlaybackTech.extend({
     this.setupTriggers();
 
     this.triggerReady();
-  },
-
-  destroy: function(){
-    this.player.tag = false;
-    this.removeTriggers();
-    this.el.parentNode.removeChild(this.el);
   },
 
   createElement: function(){
@@ -127,34 +102,40 @@ _V_.html5 = _V_.PlaybackTech.extend({
     this.triggerEvent(e);
   },
 
-  play: function(){ this.el.play(); },
-  pause: function(){ this.el.pause(); },
-  paused: function(){ return this.el.paused; },
-
-  currentTime: function(){ return this.el.currentTime; },
-  setCurrentTime: function(seconds){
-    try {
-      this.el.currentTime = seconds;
-      } catch(e) {
-        _V_.log(e, "Video isn't ready. (VideoJS)");
-      // this.warning(VideoJS.warnings.videoNotReady);
-    }
+  destroy: function(){
+    this.player.tag = false;
+    this.removeTriggers();
+    this.el.parentNode.removeChild(this.el);
   },
-
-  duration: function(){ return this.el.duration || 0; },
-  buffered: function(){ return this.el.buffered; },
-
-  volume: function(){ return this.el.volume; },
-  setVolume: function(percentAsDecimal){ this.el.volume = percentAsDecimal; },
-  muted: function(){ return this.el.muted; },
-  setMuted: function(muted){ this.el.muted = muted },
-
-  width: function(){ return this.el.offsetWidth; },
-  height: function(){ return this.el.offsetHeight; },
-
-  supportsFullScreen: function(){
+  
+  // Mappings
+  
+  play: function () {
+    this.el.play();
+  },
+  
+  pause: function () {
+    this.el.pause();
+  },
+  
+  load: function () {
+    this.el.load();
+  },
+  
+  src: function (src) {
+    this.el.src = src;
+  },
+  
+  poster: function () {
+    return this.el.poster;
+  },
+  
+  buffered: function () {
+    return this.el.buffered;
+  },
+  
+  supportsFullScreen: function () {
     if (typeof this.el.webkitEnterFullScreen == 'function') {
-
       // Seems to be broken in Chromium/Chrome && Safari in Leopard
       if (!navigator.userAgent.match("Chrome") && !navigator.userAgent.match("Mac OS X 10.5")) {
         return true;
@@ -162,58 +143,98 @@ _V_.html5 = _V_.PlaybackTech.extend({
     }
     return false;
   },
-
-  enterFullScreen: function(){
-      try {
-        this.el.webkitEnterFullScreen();
-      } catch (e) {
-        if (e.code == 11) {
-          // this.warning(VideoJS.warnings.videoNotReady);
-          _V_.log("VideoJS: Video not ready.")
-        }
+  
+  enterFullScreen: function () {
+    try {
+      this.el.webkitEnterFullScreen();
+    } catch (e) {
+      if (e.code == 11) {
+        _V_.log("VideoJS: Video not ready.")
       }
+    }
   },
-  exitFullScreen: function(){
-      try {
-        this.el.webkitExitFullScreen();
-      } catch (e) {
-        if (e.code == 11) {
-          // this.warning(VideoJS.warnings.videoNotReady);
-          _V_.log("VideoJS: Video not ready.")
-        }
+  
+  exitFullScreen: function () {
+    try {
+      this.el.webkitExitFullScreen();
+    } catch (e) {
+      if (e.code == 11) {
+        _V_.log("VideoJS: Video not ready.")
       }
+    }
   },
-  src: function(src){ this.el.src = src; },
-  load: function(){ this.el.load(); },
-  currentSrc: function(){ return this.el.currentSrc; },
-
-  preload: function(){ return this.el.preload; },
-  setPreload: function(val){ this.el.preload = val; },
-  autoplay: function(){ return this.el.autoplay; },
-  setAutoplay: function(val){ this.el.autoplay = val; },
-  loop: function(){ return this.el.loop; },
-  setLoop: function(val){ this.el.loop = val; },
-
-  error: function(){ return this.el.error; },
-  // networkState: function(){ return this.el.networkState; },
-  // readyState: function(){ return this.el.readyState; },
-  seeking: function(){ return this.el.seeking; },
-  // initialTime: function(){ return this.el.initialTime; },
-  // startOffsetTime: function(){ return this.el.startOffsetTime; },
-  // played: function(){ return this.el.played; },
-  // seekable: function(){ return this.el.seekable; },
-  ended: function(){ return this.el.ended; },
-  // videoTracks: function(){ return this.el.videoTracks; },
-  // audioTracks: function(){ return this.el.audioTracks; },
-  // videoWidth: function(){ return this.el.videoWidth; },
-  // videoHeight: function(){ return this.el.videoHeight; },
-  // textTracks: function(){ return this.el.textTracks; },
-  // defaultPlaybackRate: function(){ return this.el.defaultPlaybackRate; },
-  // playbackRate: function(){ return this.el.playbackRate; },
-  // mediaGroup: function(){ return this.el.mediaGroup; },
-  // controller: function(){ return this.el.controller; },
-  controls: function(){ return this.player.options.controls; },
-  defaultMuted: function(){ return this.el.defaultMuted; }
+  
+  setPreload: function (value) {
+    this.el.preload = value;
+  },
+  
+  preload: function () {
+    return this.el.preload;
+  },
+  
+  setCurrentTime: function (value) {
+    try {
+      this.el.currentTime = value;
+      } catch(e) {
+        _V_.log(e, "Video isn't ready. (VideoJS)");
+    }
+  },
+  
+  currentTime: function () {
+    return this.el.currentTime;
+  },
+  
+  setAutoplay: function (value) {
+    this.el.autoplay = value;
+  },
+  
+  autoplay: function () {
+    return this.el.autoplay;
+  },
+  
+  setLoop: function (value) {
+    this.el.loop = value;
+  },
+  
+  loop: function () {
+    return this.el.loop;
+  },
+  
+  setVolume: function (value) {
+    this.el.volume = value;
+  },
+  
+  volume: function () {
+    return this.el.volume;
+  },
+  
+  setMuted: function (value) {
+    this.el.muted = value;
+  },
+  
+  muted: function () {
+    return this.el.muted;
+  },
+  
+  error: function () {
+    return this.el.error;
+  },
+  
+  currentSrc: function () {
+    return this.el.currentSrc;
+  },
+  
+  duration: function () {
+    return this.el.duration || 0;
+  },
+  
+  paused: function () {
+    return this.el.paused;
+  },
+  
+  ended: function () {
+    return this.el.ended;
+  }
 });
 
 /* HTML5 Support Testing -------------------------------------------------------- */
@@ -230,7 +251,7 @@ _V_.html5.canPlaySource = function(srcObj){
 };
 
 // List of all HTML5 events (various uses).
-_V_.html5.events = "loadstart,suspend,abort,error,emptied,stalled,loadedmetadata,loadeddata,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,durationchange,timeupdate,progress,play,pause,ratechange,volumechange".split(",");
+_V_.html5.events = "error,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,timeupdate,progress,play,pause,volumechange".split(",");
 
 /* HTML5 Device Fixes ---------------------------------------------------------- */
 
@@ -381,8 +402,14 @@ _V_.flash = _V_.PlaybackTech.extend({
     return false;
   },
   
+  // no exitFullScreen method
+  
   setPreload: function (value) {
     return this.el.vjs_setProperty('preload', value);
+  },
+  
+  preload: function () {
+    return this.el.vjs_getProperty('preload');
   },
   
   setCurrentTime: function (value) {
@@ -403,6 +430,10 @@ _V_.flash = _V_.PlaybackTech.extend({
   
   setLoop: function (value) {
     return this.el.vjs_setProperty('loop', value);
+  },
+  
+  loop: function () {
+    return this.el.vjs_getProperty('loop');
   },
   
   setVolume: function (value) {
@@ -493,7 +524,7 @@ _V_.flash.prototype.support = {
 };
 
 ////////////////////////////////////////////////////////////////////////////
-// Flash Callback functions ////////////////////////////////////////////////
+// Flash callback functions ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
 // Callback function, that is called by the SWF to indicate, that it's ready
@@ -530,11 +561,9 @@ _V_.flash.onReady = function (currSwf) {
   // Update reference to playback technology element
   tech.el = el;
   
-  // Now that the element is ready, make a click on the swf play the video
-  tech.addEvent("click", tech.onClick);
-  
   checkReady();
 };
+
 
 // Callback function for non-error events
 _V_.flash.onEvent = function (swfID, eventName) {
@@ -699,5 +728,4 @@ _V_.flash.embed = function(swf, placeHolder, flashVars, params, attributes){
   placeHolder.parentNode.replaceChild(obj, placeHolder);
 
   return obj;
-
 };
