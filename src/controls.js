@@ -504,16 +504,16 @@ _V_.TimedComment = _V_.Component.extend({
   },
 
   create: function (player, options) {
-    var flag = null, pos = 100 * options.timed_comment.time / player.options.expectedDuration;
+    var flag = null, pos = 100 * options.time / player.options.expectedDuration;
     
-    return $('<div id="timed-comment-' + options.timed_comment.id + '" class="timed-comment" style="display: none; opacity: 0; left: ' + pos + '%"> \
+    return $('<div class="timed-comment" style="display: none; opacity: 0; left: ' + pos + '%"> \
                  <div class="content"> \
                    <div class="user"> \
-                     <img src="' + options.timed_comment.user.avatar_url + '" width="45" height="45" />' + (options.timed_comment.user.avatar_flag.length > 0 ? '<div class="flag ' + options.timed_comment.user.avatar_flag + '"></div>' : '') + ' \
-                     <strong>' + options.timed_comment.user.nick_name + '</strong>' + options.timed_comment.user.degree + ' \
+                     <img src="' + options.user.avatar + '" width="45" height="45" />' + (options.user.flag.length > 0 ? '<div class="flag ' + options.user.flag + '"></div>' : '') + ' \
+                     <strong>' + options.user.name + '</strong>' + options.user.degree + ' \
                    </div> \
                    <div class="comment"> \
-                     <strong>Kommentar von unserem Tutor:</strong>' + options.timed_comment.text + ' \
+                     <strong>Kommentar von unserem Tutor:</strong>' + options.text + ' \
                    </div> \
                    <div class="close"></div> \
                  </div> \
@@ -545,7 +545,7 @@ _V_.TimedComment = _V_.Component.extend({
   },
   
   update: function (condition) {
-    var delta = this.player.currentTime() - this.options.timed_comment.time;
+    var delta = this.player.currentTime() - this.options.time;
     
     if (delta >= 0 && delta < 0.75 && this.activated && condition) {
       if (!this.visible) {
@@ -683,7 +683,7 @@ _V_.TimedCommentDot = _V_.Component.extend({
   },
   
   create: function (player, options) {
-    var pos = 100 * options.timed_comment.time / player.options.expectedDuration;
+    var pos = 100 * options.time / player.options.expectedDuration;
     return $('<div class="timed-comment-dot" style="left: ' + pos + '%"></div>').get();
   },
   
