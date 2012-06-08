@@ -62,7 +62,7 @@ namespace :build do
     Rake::Log["Combining source files"]
     combined = ""
 
-    files = [ '_begin.js', 'core.js', 'lib.js', 'json.js', 'component.js', 'player.js', 'tech.js', 'controls.js', 'events.js', 'tracks.js', 'setup.js', '_end.js' ]
+    files = [ '_begin.js', 'core.js', 'lib.js', 'component.js', 'player.js', 'tech.js', 'controls.js', 'events.js', '_end.js' ]
 
     files.each do |item|
       Rake::Log[item]
