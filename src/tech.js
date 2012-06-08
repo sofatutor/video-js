@@ -2,6 +2,7 @@
 ================================================================================ */
 _V_.PlaybackTech = _V_.Component.extend({});
 
+/* // UNCOMMENT IN DEVELOPMENT (if you like)
 // Create placeholder methods for each that warn when a method isn't supported by the current playback technology
 _V_.apiMethods = "play,pause,paused,currentTime,setCurrentTime,duration,buffered,volume,setVolume,muted,setMuted,width,height,supportsFullScreen,enterFullScreen,src,load,currentSrc,preload,setPreload,autoplay,setAutoplay,loop,setLoop,error,networkState,readyState,seeking,initialTime,startOffsetTime,played,seekable,ended,videoTracks,audioTracks,videoWidth,videoHeight,textTracks,defaultPlaybackRate,playbackRate,mediaGroup,controller,controls,defaultMuted".split(",");
 
@@ -10,28 +11,39 @@ _V_.each(_V_.apiMethods, function(methodName){
     throw new Error("The '"+methodName+"' method is not available on the playback technology's API");
   }
 });
+*/
 
-/* HTML5 Playback Technology - Wrapper for HTML5 Media API
-================================================================================ */
+////////////////////////////////////////////////////////////////////////////
+// HTML5 TECH //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 _V_.html5 = _V_.PlaybackTech.extend({
-
-  init: function(player, options, ready){
+  init: function (player, options) {
+    var el,
+        html5Events = 'error,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,timeupdate,progress,play,pause,volumechange'.split(',')
+    
     this.player = player;
-    this.el = this.createElement();
-    this.ready(ready);
-
-    var source = options.source;
-
-    // If the element source is already set, we may have missed the loadstart event, and want to trigger it.
-    // We don't want to set the source again and interrupt playback.
-    if (source && this.el.currentSrc == source.src) {
-      player.triggerEvent("loadstart");
-
-    // Otherwise set the source if one was provided.
-    } else if (source) {
-      this.el.src = source.src;
-    }
-
+    
+    if (player.tag)
+      $(player.tag).remove();
+    
+    el = this.el = $('<video>').attr({
+      id:       player.el.id + '_html5_api',
+      'class':  'vjs-tech',
+      src:      options.source && options.source.src,
+      autoplay: options.autoplay,
+      preload:  options.preload,
+      loop:     options.loop,
+      muted:    options.muted,
+      poster:   options.poster
+    }).appendTo(player.el).get(0);
+    
+    $.each(html5Events, function(index, event) {
+      console.log(event);
+      $(el).on(event, function () {
+        $(player.el).trigger(event);
+      });
+    });
+    
     // Chrome and Safari both have issues with autoplay.
     // In Safari (5.1.1), when we move the video element into the container div, autoplay doesn't work.
     // In Chrome (15), if you have autoplay + a poster + no controls, the video gets hidden (but audio plays)
@@ -42,70 +54,13 @@ _V_.html5 = _V_.PlaybackTech.extend({
         this.play();
       }
     });
-
-    this.setupTriggers();
-
+    
     this.triggerReady();
   },
-
-  createElement: function(){
-    var html5 = _V_.html5,
-        player = this.player,
-
-        // If possible, reuse original tag for HTML5 playback technology element
-        el = player.tag,
-        newEl;
-
-    // Check if this browser supports moving the element into the box.
-    // On the iPhone video will break if you move the element,
-    // So we have to create a brand new element.
-    if (!el || this.support.movingElementInDOM === false) {
-
-      // If the original tag is still there, remove it.
-      if (el) {
-        player.el.removeChild(el);
-      }
-
-      newEl = _V_.createElement("video", {
-        id: el.id || player.el.id + "_html5_api",
-        className: el.className || "vjs-tech"
-      });
-
-      el = newEl;
-      _V_.insertFirst(el, player.el);
-    }
-
-    // Update tag settings, in case they were overridden
-    _V_.each(["autoplay","preload","loop","muted"], function(attr){ // ,"poster"
-      if (player.options[attr] !== null) {
-        el[attr] = player.options[attr];
-      }
-    }, this);
-
-    return el;
-  },
-
-  // Make video events trigger player events
-  // May seem verbose here, but makes other APIs possible.
-  setupTriggers: function(){
-    _V_.each.call(this, _V_.html5.events, function(type){
-      _V_.addEvent(this.el, type, _V_.proxy(this.player, this.eventHandler));
-    });
-  },
-  removeTriggers: function(){
-    _V_.each.call(this, _V_.html5.events, function(type){
-      _V_.removeEvent(this.el, type, _V_.proxy(this.player, this.eventHandler));
-    });
-  },
-  eventHandler: function(e){
-    e.stopPropagation();
-    this.triggerEvent(e);
-  },
-
-  destroy: function(){
+  
+  destroy: function () {
     this.player.tag = false;
-    this.removeTriggers();
-    this.el.parentNode.removeChild(this.el);
+    $(this.el).remove();
   },
   
   // Mappings
@@ -239,37 +194,25 @@ _V_.html5 = _V_.PlaybackTech.extend({
 
 /* HTML5 Support Testing -------------------------------------------------------- */
 
-_V_.html5.isSupported = function(){
+_V_.html5.isSupported = function () {
   return !!document.createElement("video").canPlayType;
 };
 
-_V_.html5.canPlaySource = function(srcObj){
+_V_.html5.canPlaySource = function (srcObj) {
   return !!document.createElement("video").canPlayType(srcObj.type);
-  // TODO: Check Type
-  // If no Type, check ext
-  // Check Media Type
 };
-
-// List of all HTML5 events (various uses).
-_V_.html5.events = "error,canplay,canplaythrough,playing,waiting,seeking,seeked,ended,timeupdate,progress,play,pause,volumechange".split(",");
 
 /* HTML5 Device Fixes ---------------------------------------------------------- */
 
 _V_.html5.prototype.support = {
-
   // Support for tech specific full screen. (webkitEnterFullScreen, not requestFullscreen)
   // http://developer.apple.com/library/safari/#documentation/AudioVideo/Reference/HTMLVideoElementClassReference/HTMLVideoElement/HTMLVideoElement.html
   // Seems to be broken in Chromium/Chrome && Safari in Leopard
   fullscreen: (typeof _V_.testVid.webkitEnterFullScreen !== undefined) ? (!_V_.ua.match("Chrome") && !_V_.ua.match("Mac OS X 10.5") ? true : false) : false,
-
-  // In iOS, if you move a video element in the DOM, it breaks video playback.
-  movingElementInDOM: !_V_.isIOS()
-
 };
 
 // Android
 if (_V_.isAndroid()) {
-
   // Override Android 2.2 and less canPlayType method which is broken
   if (_V_.androidVersion() < 3) {
     document.createElement("video").constructor.prototype.canPlayType = function(type){
@@ -281,12 +224,8 @@ if (_V_.isAndroid()) {
 ////////////////////////////////////////////////////////////////////////////
 // FLASH TECH //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
-
-/* VideoJS-SWF - Custom Flash Player with HTML5-ish API - https://github.com/zencoder/video-js-swf
-================================================================================ */
 _V_.flash = _V_.PlaybackTech.extend({
-
-  init: function(player, options){
+  init: function (player, options) {
     this.player = player;
 
     var source = options.source,
@@ -472,7 +411,6 @@ _V_.flash = _V_.PlaybackTech.extend({
     return this.el.vjs_getProperty('ended');
   }
 });
-
 
 ////////////////////////////////////////////////////////////////////////////
 // Flash requirements //////////////////////////////////////////////////////
