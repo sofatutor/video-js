@@ -517,10 +517,7 @@ _V_.flash.prototype.support = {
   timeupdateEvent: false,
 
   // Resizing plugins using request fullscreen reloads the plugin
-  fullscreenResize: false,
-
-  // Resizing plugins in Firefox always reloads the plugin (e.g. full window mode)
-  parentResize: !(_V_.ua.match("Firefox"))
+  fullscreenResize: ($.browser.mozilla && parseInt($.browser.version) >= 13),
 };
 
 ////////////////////////////////////////////////////////////////////////////

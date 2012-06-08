@@ -285,7 +285,7 @@ _V_.Player = _V_.Component.extend({
     if (source) {
       if (source.src == this.values.src && this.values.currentTime > 0) {
         techOptions.startTime = this.values.currentTime;
-      } else if (source.src == this.values.src && _V_.isFF()) {
+      } else if (source.src == this.values.src && $.browser.mozilla && parseInt($.browser.version) < 13) {
         // in FF+Flash currentTime is always set to 0 (somehow)
         // workaround is to set startTime to beginning (0 would evaluate as false)
         techOptions.startTime = 0.1;
