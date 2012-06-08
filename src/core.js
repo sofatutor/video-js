@@ -42,10 +42,7 @@ var VideoJS = function(id, addOptions, ready){
 },
 
 // Shortcut
-_V_ = VideoJS,
-
-// CDN Version. Used to target right flash swf.
-CDN_VERSION = "GENERATED_CDN_VSN";
+_V_ = VideoJS;
 
 VideoJS.players = {};
 
@@ -53,7 +50,6 @@ VideoJS.options = {
 
   // Default order of fallback technology
   techOrder: ["html5","flash"],
-  // techOrder: ["flash","html5"],
 
   html5: {},
   flash: { swf: "/flash/VideoJS.swf" },
@@ -69,57 +65,11 @@ VideoJS.options = {
   components: {
     "posterImage": {},
     "clickLayer" : {},
-    "textTrackDisplay": {},
     "loadingSpinner": {},
     "upperRightLogo": {},
     "bigPlayButton": {},
     "bigPlayToggle": {},
     "postroll": {},
-    //"progressControl": {},
     "controlBar": {}
   }
-
-  // components: [
-  //   "poster",
-  //   "loadingSpinner",
-  //   "bigPlayButton",
-  //   { name: "controlBar", options: {
-  //     components: [
-  //       "playToggle",
-  //       "fullscreenToggle",
-  //       "currentTimeDisplay",
-  //       "timeDivider",
-  //       "durationDisplay",
-  //       "remainingTimeDisplay",
-  //       { name: "progressControl", options: {
-  //         components: [
-  //           { name: "seekBar", options: {
-  //             components: [
-  //               "loadProgressBar",
-  //               "playProgressBar",
-  //               "seekHandle"
-  //             ]}
-  //           }
-  //         ]}
-  //       },
-  //       { name: "volumeControl", options: {
-  //         components: [
-  //           { name: "volumeBar", options: {
-  //             components: [
-  //               "volumeLevel",
-  //               "volumeHandle"
-  //             ]}
-  //           }
-  //         ]}
-  //       },
-  //       "muteToggle"
-  //     ]
-  //   }},
-  //   "subtitlesDisplay"/*, "replay"*/
-  // ]
 };
-
-// Set CDN Version of swf
-if (CDN_VERSION != "GENERATED_CDN_VSN") {
-  _V_.options.flash.swf = "http://vjs.zencdn.net/"+CDN_VERSION+"/video-js.swf"
-}
