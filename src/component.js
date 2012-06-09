@@ -109,7 +109,7 @@ _V_.Component = _V_.Class.extend({
       options = options || {};
 
       // Assume name of set is a lowercased name of the UI Class (PlayButton, etc.)
-      componentClass = options.componentClass || _V_.uc(name);
+      componentClass = options.componentClass || _V_.capitalize(name);
 
       // Create a new object & element for this controls set
       // If there's no .player, this is a player
@@ -133,37 +133,15 @@ _V_.Component = _V_.Class.extend({
   /* Display
   ================================================================================ */
   show: function(){
-    this.el.style.display = "block";
+    $(this.el).show();
   },
 
   hide: function(){
-    this.el.style.display = "none";
+    $(this.el).hide();
   },
 
   flash: function(){
     $(this.el).show().css('opacity', '0.8').css('width', '60px').css('height', '60px').css('margin','-30px 0 0 -30px').stop().animate({height: '96px', width: '96px', opacity: '0', 'margin-left': '-48px', 'margin-top': '-48px'}, 1000);
-  },
-
-  fadeIn: function(){
-    $(this.el).stop(true,true).fadeIn(2000);
-  },
-
-  fadeOut: function(){
-    $(this.el).stop(true,true).fadeOut(2000);
-  },
-
-  lockShowing: function(){
-    var style = this.el.style;
-    style.display = "block";
-    style.opacity = 1;
-    style.visiblity = "visible";
-  },
-
-  unlockShowing: function(){
-    var style = this.el.style;
-    style.display = "";
-    style.opacity = "";
-    style.visiblity = "";
   },
 
   addClass: function(classToAdd){

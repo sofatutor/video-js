@@ -73,14 +73,14 @@ _V_.extend({
     }
   },
 
-  addClass: function(element, classToAdd){
+  addClass: function (element, classToAdd) {
     $(element).addClass(classToAdd);
   },
-
-  removeClass: function(element, classToRemove){
+  
+  removeClass: function (element, classToRemove) {
     $(element).removeClass(classToRemove);
   },
-
+  
   // Attempt to block the ability to select text while dragging controls
   blockTextSelection: function(){
     document.body.focus();
@@ -112,30 +112,13 @@ _V_.extend({
     return h + m + s;
   },
 
-  uc: function(string){
+  capitalize: function(string){
     return string.charAt(0).toUpperCase() + string.slice(1);
   },
 
-  // Return the relative horizonal position of an event as a value from 0-1
-  getRelativePosition: function(x, relativeElement){
-    return Math.max(0, Math.min(1, (x - _V_.findPosX(relativeElement)) / relativeElement.offsetWidth));
-  },
-  
-  getComputedStyleValue: function(element, style){
-    return window.getComputedStyle(element, null).getPropertyValue(style);
-  },
-
-  trim: function(string){ return string.toString().replace(/^\s+/, "").replace(/\s+$/, ""); },
   round: function(num, dec) {
     if (!dec) { dec = 0; }
     return Math.round(num*Math.pow(10,dec))/Math.pow(10,dec);
-  },
-
-  isEmpty: function(object) {
-    for (var prop in object) {
-      return false;
-    }
-    return true;
   },
 
   // Mimic HTML5 TimeRange Spec.
@@ -147,41 +130,7 @@ _V_.extend({
     };
   },
 
-  /* Element Data Store. Allows for binding data to an element without putting it directly on the element.
-     Ex. Event listneres are stored here.
-     (also from jsninja.com)
-  ================================================================================ */
-  cache: {}, // Where the data is stored
   guid: 1, // Unique ID for the element
-  expando: "vdata" + (new Date).getTime(), // Unique attribute to store element's guid in
-
-  // Returns the cache object where data for the element is stored
-  getData: function(elem){
-    var id = elem[_V_.expando];
-    if (!id) {
-      id = elem[_V_.expando] = _V_.guid++;
-      _V_.cache[id] = {};
-    }
-    return _V_.cache[id];
-  },
-  // Delete data for the element from the cache and the guid attr from element
-  removeData: function(elem){
-    var id = elem[_V_.expando];
-    if (!id) { return; }
-    // Remove all stored data
-    delete _V_.cache[id];
-    // Remove the expando property from the DOM node
-    try {
-      delete elem[_V_.expando];
-    } catch(e) {
-      if (elem.removeAttribute) {
-        elem.removeAttribute(_V_.expando);
-      } else {
-        // IE doesn't appear to support removeAttribute on the document element
-        elem[_V_.expando] = null;
-      }
-    }
-  },
 
   /* Proxy (a.k.a Bind or Context). A simple method for changing the context of a function
      It also stores a unique id on the function so it can be easily removed from events
