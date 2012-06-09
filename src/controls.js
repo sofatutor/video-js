@@ -513,7 +513,7 @@ _V_.TimedComment = _V_.Component.extend({
                      <strong>' + options.user.name + '</strong>' + options.user.degree + ' \
                    </div> \
                    <div class="comment"> \
-                     <strong>Kommentar von unserem Tutor:</strong>' + options.text + ' \
+                     <strong>Kommentar:</strong>' + options.text + ' \
                    </div> \
                    <div class="close"></div> \
                  </div> \

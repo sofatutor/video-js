@@ -238,7 +238,7 @@ _V_.extend({
   },
 
   showGeneralError: function(msg){
-    $('.vjs-progress-control').hide();
+    $('.vjs-progress-control').remove();
     $('.vjs-general-error').show();
   }
 });
