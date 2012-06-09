@@ -998,18 +998,18 @@ _V_.LoadingSpinner = _V_.Component.extend({
   init: function(player, options){
     this._super(player, options);
 
-    player.on("canplay", _V_.proxy(this, this.hide));
-    player.on("canplaythrough", _V_.proxy(this, this.hide));
-    player.on("playing", _V_.proxy(this, this.hide));
-    player.on("seeked", _V_.proxy(this, this.hide));
+    // Firefox is the only browser that supports the 'waiting' event, which is necessary to determine when to show a spinner.
+    if ($.browser.mozilla) {
+      player.on("canplay", _V_.proxy(this, this.hide));
+      player.on("canplaythrough", _V_.proxy(this, this.hide));
+      player.on("playing", _V_.proxy(this, this.hide));
 
-    player.on("seeking", _V_.proxy(this, this.show));
+      // Not showing spinner on stalled any more. Browsers may stall and then not trigger any events that would remove the spinner.
+      // Checked in Chrome 16 and Safari 5.1.2. http://help.videojs.com/discussions/problems/883-why-is-the-download-progress-showing
+      // player.on("stalled", _V_.proxy(this, this.show));
 
-    // Not showing spinner on stalled any more. Browsers may stall and then not trigger any events that would remove the spinner.
-    // Checked in Chrome 16 and Safari 5.1.2. http://help.videojs.com/discussions/problems/883-why-is-the-download-progress-showing
-    // player.on("stalled", _V_.proxy(this, this.show));
-
-    player.on("waiting", _V_.proxy(this, this.show));
+      player.on("waiting", _V_.proxy(this, this.show));
+    }
   },
 
   createElement: function(){
