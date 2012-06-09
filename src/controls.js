@@ -1046,9 +1046,6 @@ _V_.Postroll = _V_.Component.extend({
   },
 
   show: function(){
-    if (this.player.isFullScreen && !_V_.isFF()) {
-      this.player.cancelFullScreen();
-    }
     $(this.el).show();
     this.player.triggerEvent("showPostroll");
   },

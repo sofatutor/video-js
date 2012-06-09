@@ -412,6 +412,10 @@ _V_.Player = _V_.Component.extend({
   /* Player event handlers (how the player reacts to certain events)
   ================================================================================ */
   onEnded: function(){
+    if (this.isFullScreen && !_V_.isFF()) {
+      this.cancelFullScreen();
+    }
+    
     if (this.options.loop) {
       this.currentTime(0);
       this.play();
