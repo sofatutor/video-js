@@ -995,29 +995,49 @@ _V_.BigPlayButton = _V_.Button.extend({
 /* Loading Spinner
 ================================================================================ */
 _V_.LoadingSpinner = _V_.Component.extend({
-  init: function(player, options){
+  active: false,
+  
+  timeout: null,
+  
+  init: function (player, options) {
     this._super(player, options);
-
-    // Firefox is the only browser that supports the 'waiting' event, which is necessary to determine when to show a spinner.
-    if ($.browser.mozilla) {
-      player.on("canplay", _V_.proxy(this, this.hide));
-      player.on("canplaythrough", _V_.proxy(this, this.hide));
-      player.on("playing", _V_.proxy(this, this.hide));
-
-      // Not showing spinner on stalled any more. Browsers may stall and then not trigger any events that would remove the spinner.
-      // Checked in Chrome 16 and Safari 5.1.2. http://help.videojs.com/discussions/problems/883-why-is-the-download-progress-showing
-      // player.on("stalled", _V_.proxy(this, this.show));
-
-      player.on("waiting", _V_.proxy(this, this.show));
-    }
+    
+    player.on('play', _V_.proxy(this, this.activate));
+    player.on('pause', _V_.proxy(this, this.deactivate));
+    player.on('timeupdate', _V_.proxy(this, this.onTimeupdate));
   },
-
-  createElement: function(){
+  
+  createElement: function () {
     return _V_.createElement("img", {
       className: "vjs-loading-spinner",
       src: "/images/new_images/player/spinner.gif",
       style: "display: none"
     })
+  },
+  
+  activate: function () {
+    var that = this;
+    this.active = true;
+    this.timeout = window.setTimeout(function () {
+      that.show();
+    }, 600);
+  },
+  
+  deactivate: function () {
+    this.active = false;
+    clearTimeout(this.timeout);
+    this.hide();
+  },
+  
+  onTimeupdate: function () {
+    var that = this;
+    if (this.active) {
+      this.hide();
+      window.clearTimeout(this.timeout);
+      this.timeout = window.setTimeout(function () {
+        that.show();
+      }, 600);
+    }
   }
 });
 
