@@ -38,7 +38,6 @@ _V_.html5 = _V_.PlaybackTech.extend({
     }).appendTo(player.el).get(0);
     
     $.each(html5Events, function(index, event) {
-      console.log(event);
       $(el).on(event, function () {
         $(player.el).trigger(event);
       });
