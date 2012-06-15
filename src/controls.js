@@ -1419,7 +1419,7 @@ _V_.LoadProgressBar = _V_.Component.extend({
   createElement: function(){
     return this._super("div", {
       className: "vjs-load-progress",
-      innerHTML: '<span class="vjs-control-text">Loaded: 0%</span>'
+      innerHTML: ''
     });
   },
 
@@ -1435,7 +1435,7 @@ _V_.PlayProgressBar = _V_.Component.extend({
   createElement: function(){
     return this._super("div", {
       className: "vjs-play-progress",
-      innerHTML: '<span class="vjs-control-text">Progress: 0%</span>'
+      innerHTML: ''
     });
   }
 
@@ -1516,7 +1516,7 @@ _V_.VolumeLevel = _V_.Component.extend({
   createElement: function(){
     return this._super("div", {
       className: "vjs-volume-level",
-      innerHTML: '<span class="vjs-control-text"></span>'
+      innerHTML: ''
     });
   }
 
@@ -1527,7 +1527,7 @@ _V_.VolumeHandle = _V_.Component.extend({
   createElement: function(){
     return this._super("div", {
       className: "vjs-volume-handle",
-      innerHTML: '<span class="vjs-control-text"></span>'
+      innerHTML: ''
       // tabindex: 0,
       // role: "slider", "aria-valuenow": 0, "aria-valuemin": 0, "aria-valuemax": 100
     });
@@ -1546,7 +1546,7 @@ _V_.MuteToggle = _V_.Button.extend({
   createElement: function(){
     return this._super("div", {
       className: "vjs-mute-control vjs-control",
-      innerHTML: '<div><span class="vjs-control-text">Mute</span></div>'
+      innerHTML: '<div></div>'
     });
   },
 
