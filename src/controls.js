@@ -1024,9 +1024,9 @@ _V_.LoadingSpinner = _V_.Component.extend({
   },
   
   createElement: function () {
-    return _V_.createElement("img", {
+    return _V_.createElement("div", {
       className: "vjs-loading-spinner",
-      src: "/images/new_images/player/spinner.gif",
+      innerHTML: '<img src="/images/new_images/player/spinner.gif" />',
       style: "display: none"
     })
   },
