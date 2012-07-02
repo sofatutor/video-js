@@ -526,7 +526,7 @@ _V_.TimedComment = _V_.Component.extend({
                  <div class="content"> \
                    <div class="user"> \
                      <img src="' + options.user.avatar + '" width="45" height="45" />' + (options.user.flag && options.user.flag.length > 0 ? '<div class="flag ' + options.user.flag + '"></div>' : '') + ' \
-                     <strong>' + options.user.name + '</strong>' + options.user.degree + ' \
+                     <strong>' + options.user.name + '</strong>' + (options.user.degree ? options.user.degree : '') + ' \
                    </div> \
                    <div class="comment"> \
                      <strong>' + commentTitle + '</strong>' + options.text + ' \
