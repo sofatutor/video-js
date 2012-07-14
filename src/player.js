@@ -79,10 +79,7 @@ _V_.Player = _V_.Component.extend({
     this.on("error", this.onError);
     
     this.on("severeError", this.onSevereError);
-    $(el).on('error', function() {
-      that.onSevereError();
-    });
-
+    
     // When the API is ready, loop through the components and add to the player.
     if (options.controls) {
       this.ready(function(){
