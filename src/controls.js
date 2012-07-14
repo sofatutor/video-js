@@ -1036,6 +1036,8 @@ _V_.LoadingSpinner = _V_.Component.extend({
     player.on('play', _V_.proxy(this, this.activate));
     player.on('pause', _V_.proxy(this, this.deactivate));
     player.on('timeupdate', _V_.proxy(this, this.onTimeupdate));
+    
+    player.one('click', _V_.proxy(this, this.activate));
   },
   
   createElement: function () {
