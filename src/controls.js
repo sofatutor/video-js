@@ -23,6 +23,8 @@ _V_.ControlBar = _V_.Component.extend({
   
   visibleTimedComments: false,
   
+  postrollVisible: false,
+  
   userIsActive: false,
   
   options: {
@@ -52,6 +54,9 @@ _V_.ControlBar = _V_.Component.extend({
       this.player.on('showTimedComment', this.proxy(this.increaseTimedComments));
       this.player.on('hideTimedComment', this.proxy(this.decreaseTimedComments));
       
+      this.player.on('showPostroll',     this.proxy(this.postrollVisible));
+      this.player.on('hidePostroll',     this.proxy(this.postrollInvisible));
+      
       this.player.on('lockControls',     this.proxy(this.lockControls));
       this.player.on('unlockControls',   this.proxy(this.unlockControls));
       
@@ -75,6 +80,16 @@ _V_.ControlBar = _V_.Component.extend({
     this.update();
   },
   
+  postrollVisible: function () {
+    this.postrollVisible = true;
+    this.update();
+  },
+  
+  postrollInvisible: function () {
+    this.postrollVisible = false;
+    this.update();
+  },
+  
   userActive: function () {
     this.userIsActive = true;
     this.update();
@@ -89,7 +104,7 @@ _V_.ControlBar = _V_.Component.extend({
     // not visible
     if (!this.visible) {
       // user active -> full
-      if (this.userIsActive || this.locked || this.player.ended()) {
+      if (this.userIsActive || this.locked || this.player.ended() || this.postrollVisible) {
         this.show('full');
       // user inactive, but timed comments -> half
       } else if (this.visibleTimedComments) {
@@ -98,7 +113,7 @@ _V_.ControlBar = _V_.Component.extend({
     // half visible
     } else if (this.visible === 'half') {
       // user active -> full
-      if (this.userIsActive || this.locked || this.player.ended()) {
+      if (this.userIsActive || this.locked || this.player.ended() || this.postrollVisible) {
         this.show('full');
       // user inactive and no timed comments -> hide
       } else if (!this.visibleTimedComments) {
@@ -107,7 +122,7 @@ _V_.ControlBar = _V_.Component.extend({
     // fully visible
     } else {
       if (!this.userIsActive) {
-        if (!this.visibleTimedComments && !this.locked && !this.player.ended()) {
+        if (!this.visibleTimedComments && !this.locked && !this.player.ended() && !this.postrollVisible) {
           this.hide();
         } else if (this.visibleTimedComments) {
           this.show('half');
