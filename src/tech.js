@@ -293,7 +293,7 @@ _V_.flash = _V_.PlaybackTech.extend({
   },
   
   destroy: function(){
-    this.el.parentNode.removeChild(this.el);
+    $(this.el).remove();
   },
   
   // Mappings
