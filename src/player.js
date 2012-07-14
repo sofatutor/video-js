@@ -493,8 +493,10 @@ _V_.Player = _V_.Component.extend({
           if (e.name == "TypeError") {
             _V_.log("Video.js: " + method + " unavailable on "+this.techName+" playback technology element.", e);
             this.tech.isReady = false;
-            this.trigger('severeError');
-
+            
+            //this.trigger('severeError');
+            this.options.restart(this.id, this.options);
+            
           } else {
             _V_.log(e);
           }
