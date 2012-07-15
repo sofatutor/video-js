@@ -372,7 +372,7 @@ _V_.Player = _V_.Component.extend({
     this.manualTimeUpdates = true;
 
     this.on("play", this.trackCurrentTime);
-    this.on("pause", this.stopTrackingCurrentTime);
+    this.on("pause ended", this.stopTrackingCurrentTime);
     // timeupdate is also called by .currentTime whenever current time is set
 
     // Watch for native timeupdate event
