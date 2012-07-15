@@ -1030,6 +1030,8 @@ _V_.LoadingSpinner = _V_.Component.extend({
   
   timeout: null,
   
+  lastCurrentTime: null,
+  
   init: function (player, options) {
     this._super(player, options);
     
@@ -1065,11 +1067,14 @@ _V_.LoadingSpinner = _V_.Component.extend({
   onTimeupdate: function () {
     var that = this;
     if (this.active) {
-      this.hide();
-      window.clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(function () {
-        that.show();
-      }, 600);
+      if (this.player.currentTime() !== this.lastCurrentTime) {
+        this.hide();
+        this.lastCurrentTime = this.player.currentTime();
+        window.clearTimeout(this.timeout);
+        this.timeout = window.setTimeout(function () {
+          that.show();
+        }, 600);
+      }
     }
   }
 });
