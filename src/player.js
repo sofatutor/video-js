@@ -200,6 +200,8 @@ _V_.Player = _V_.Component.extend({
       sources: [],
       tracks: []
     },
+    isChrome = $.browser.safari && /chrome/.test(navigator.userAgent.toLowerCase()),
+    readSrc,
     tag = this.tag,
     getAttribute = "getAttribute"; // For better minification
 
@@ -218,8 +220,10 @@ _V_.Player = _V_.Component.extend({
       for (var c,i=0,j=this.tag.childNodes;i<j.length;i++) {
         c = j[i];
         if (c.nodeName.toLowerCase() == "source") {
+          readSrc = c[getAttribute]('src');
           options.sources.push({
-            src: c[getAttribute]('src'),
+            // workaround chrome caching problems?
+            src: readSrc + (isChrome ? (readSrc.match(/\?/) ? '&' : '?') + new Date().getTime() : ''),
             type: c[getAttribute]('type'),
             media: c[getAttribute]('media'),
             title: c[getAttribute]('title')
