@@ -207,7 +207,7 @@ _V_.html5.prototype.support = {
   // Support for tech specific full screen. (webkitEnterFullScreen, not requestFullscreen)
   // http://developer.apple.com/library/safari/#documentation/AudioVideo/Reference/HTMLVideoElementClassReference/HTMLVideoElement/HTMLVideoElement.html
   // Seems to be broken in Chromium/Chrome && Safari in Leopard
-  fullscreen: (typeof _V_.testVid.webkitEnterFullScreen !== undefined) ? (!_V_.ua.match("Chrome") && !_V_.ua.match("Mac OS X 10.5") ? true : false) : false,
+  fullscreen: (typeof _V_.testVid.webkitEnterFullScreen !== undefined) ? (!_V_.ua.match("Chrome") && !_V_.ua.match("Mac OS X 10.5") ? true : false) : false
 };
 
 // Android
@@ -454,7 +454,7 @@ _V_.flash.prototype.support = {
   timeupdateEvent: false,
 
   // Resizing plugins using request fullscreen reloads the plugin
-  fullscreenResize: ($.browser.mozilla && parseInt($.browser.version) >= 13),
+  fullscreenResize: ($.browser.mozilla && parseInt($.browser.version) >= 13)
 };
 
 ////////////////////////////////////////////////////////////////////////////
