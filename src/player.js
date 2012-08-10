@@ -457,7 +457,8 @@ _V_.Player = _V_.Component.extend({
 
   // Pass values to the playback tech
   techCall: function(method, arg){
-
+    if (typeof this.tech === 'undefined') return;
+    
     // If it's not ready yet, call method when it is
     if (!this.tech.isReady) {
       this.tech.ready(function(){
@@ -476,6 +477,7 @@ _V_.Player = _V_.Component.extend({
 
   // Get calls can't wait for the tech, and sometimes don't need to.
   techGet: function(method){
+    if (typeof this.tech === 'undefined') return;
 
     // Make sure tech is ready
     if (this.tech.isReady) {
