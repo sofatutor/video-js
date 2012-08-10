@@ -354,6 +354,14 @@ _V_.flash = _V_.PlaybackTech.extend({
     return this.el.vjs_setProperty('currentTime', value);
   },
   
+  setCurrentTime: function (value) {
+    if (!this.player.options.flvWorkaround || (this.player.options.flvWorkaround && (this.el.vjs_getProperty('buffered') - 10) > value)) {
+      this.el.vjs_setProperty('currentTime', value);
+    }
+    
+    return this.el.vjs_setProperty('currentTime', value);
+  },
+  
   currentTime: function () {
     return this.el.vjs_getProperty('currentTime');
   },
