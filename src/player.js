@@ -156,6 +156,16 @@ _V_.Player = _V_.Component.extend({
       this.on('ended', this.options.videoViewTracker.stop);
     }
     
+    if (this.options.keyboardControls) {
+      var player = this;
+      $(document).on('keydown', function (e) {
+        if (e.keyCode === 32 && $(e.target).is('body')) {
+          player[player.paused() ? 'play' : 'pause']();
+          return false;
+        }
+      });
+    }
+    
     // Tracks defined in tracks.js
     this.textTracks = [];
     if (options.tracks && options.tracks.length > 0) {
