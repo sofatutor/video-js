@@ -1621,10 +1621,9 @@ _V_.PosterImage = _V_.Button.extend({
   },
 
   createElement: function(){
-    return _V_.createElement("img", {
+    return _V_.createElement("div", {
       className: "vjs-poster",
-      src: this.player.options.poster,
-      height: this.player.options.height,
+      innerHTML: "<img src='" + this.player.options.poster + "' height='" + this.player.options.height + "' />",
       // Don't want poster to be tabbable.
       tabIndex: -1
     });
