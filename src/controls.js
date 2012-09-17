@@ -741,7 +741,7 @@ _V_.NormalTimedCommentDot = _V_.TimedCommentDot.extend({
         player.normalTimedComments[that.index].requestPrivilegedDisplay = true;
         player.normalTimedComments[that.index].overlap = 14;
         player.timedCommentsController.update();
-      }, 1000);
+      }, 300);
     },
     function () {
       window.clearTimeout(delay);
@@ -765,7 +765,7 @@ _V_.FullScreenTimedCommentDot = _V_.TimedCommentDot.extend({
         player.fullScreenTimedComments[that.index].requestPrivilegedDisplay = true;
         player.fullScreenTimedComments[that.index].overlap = 12;
         player.timedCommentsController.update();
-      }, 1000);
+      }, 300);
     },
     function () {
       window.clearTimeout(delay);
