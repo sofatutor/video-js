@@ -166,6 +166,12 @@ _V_.Player = _V_.Component.extend({
       });
     }
     
+    if (this.options.startAt) {
+      this.ready(function () {
+        this.startAt(this.options.startAt);
+      });
+    }
+    
     // Tracks defined in tracks.js
     this.textTracks = [];
     if (options.tracks && options.tracks.length > 0) {
@@ -571,6 +577,10 @@ _V_.Player = _V_.Component.extend({
     // Cache last currentTime and return
     // Default to 0 seconds
     return this.values.currentTime = (this.techGet("currentTime") || 0);
+  },
+
+  startAt: function (time) {
+    this.techCall('startAt', time);
   },
 
   // http://dev.w3.org/html5/spec/video.html#dom-media-duration

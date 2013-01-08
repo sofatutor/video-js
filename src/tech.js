@@ -135,6 +135,18 @@ _V_.html5 = _V_.PlaybackTech.extend({
     }
   },
   
+  startAt: function (time) {
+    var that = this;
+    this.load();
+    this.player.one('canplay', function () {
+      that.setCurrentTime(time);
+    });
+    this.player.one('seeked', function () {
+      that.play();
+      that.player.trigger('startedAt');
+    });
+  },
+  
   currentTime: function () {
     return this.el.currentTime;
   },
@@ -355,6 +367,31 @@ _V_.flash = _V_.PlaybackTech.extend({
     if (!this.player.options.flvWorkaround || (this.player.options.flvWorkaround && (this.el.vjs_getProperty('buffered') - 10) > value)) {
       this.el.vjs_setProperty('currentTime', value);
     }
+  },
+  
+  startAt: function (time) {
+    var that = this;
+    this.load();
+    this.play();
+    this.player.one('playing', function () {
+      that.pause();
+    });
+    
+    function setTime(value) {
+      if (that.buffered().end() > (value + 10)) {
+        that.player.on('seeked', function () {
+          that.play();
+          that.player.trigger('startedAt');
+        });
+        that.setCurrentTime(value);
+      } else {
+        window.setTimeout(function() {
+          setTime(value);
+        }, 200);
+      }
+    }
+    
+    setTime(time);
   },
   
   currentTime: function () {
