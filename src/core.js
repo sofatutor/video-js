@@ -72,5 +72,7 @@ VideoJS.options = {
     "postroll": {},
     "overlay": {},
     "controlBar": {}
-  }
+  },
+
+  debug: false
 };

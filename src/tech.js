@@ -39,6 +39,7 @@ _V_.html5 = _V_.PlaybackTech.extend({
     
     $.each(html5Events, function(index, event) {
       $(el).on(event, function () {
+        if (player.options.debug) console.log("HTML5 event: " + event);
         $(player.el).trigger(event);
       });
     });
@@ -514,30 +515,37 @@ _V_.flash.onEvent = function (swfID, eventName) {
     //  player.trigger('loadstart');
     //  break;
     case 'playing':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('playing');
       break;
     case 'pause':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('pause');
       break;
     case 'play':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('play');
       break;
     case 'seeking':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('seeking');
       break;
     case 'seeked':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('seeked');
       break;
     //case 'loadeddata':
     //  player.trigger('loadeddata');
     //  break;
     case 'waiting':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('waiting');
       break;
     //case 'emptied':
     //  player.trigger('emptied');
     //  break;
     case 'ended':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('ended');
       break;
     //case 'loadedmetadata':
@@ -547,12 +555,15 @@ _V_.flash.onEvent = function (swfID, eventName) {
     //  player.trigger('durationchange');
     //  break;
     case 'canplay':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('canplay');
       break;
     case 'canplaythrough':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('canplaythrough');
       break;
     case 'volumechange':
+      if (player.options.debug) console.log("Flash event: " + eventName);
       player.trigger('volumechange');
       break;
     //case 'rtmpconnected':
@@ -598,6 +609,7 @@ _V_.flash.onError = function (swfID, eventName) {
   //}
   
   // but we don't care about specific errors
+  if (player.options.debug) console.log("Flash event: " + severeError);
   player.trigger('severeError');
   
   _V_.log('Flash Error', eventName, swfID);
