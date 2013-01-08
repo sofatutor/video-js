@@ -70,6 +70,7 @@ VideoJS.options = {
     "bigPlayButton": {},
     "bigPlayToggle": {},
     "postroll": {},
+    "overlay": {},
     "controlBar": {}
   }
 };

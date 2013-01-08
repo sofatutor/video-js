@@ -23,6 +23,8 @@ _V_.ControlBar = _V_.Component.extend({
   
   visibleTimedComments: false,
   
+  overlay: false,
+  
   postroll: false,
   
   userIsActive: false,
@@ -54,6 +56,8 @@ _V_.ControlBar = _V_.Component.extend({
       this.player.on('showTimedComment', this.proxy(this.increaseTimedComments));
       this.player.on('hideTimedComment', this.proxy(this.decreaseTimedComments));
       
+      this.player.on('showOverlay',      this.proxy(this.overlayVisible));
+      
       this.player.on('showPostroll',     this.proxy(this.postrollVisible));
       this.player.on('hidePostroll',     this.proxy(this.postrollInvisible));
       
@@ -80,6 +84,11 @@ _V_.ControlBar = _V_.Component.extend({
     this.update();
   },
   
+  overlayVisible: function () {
+    this.overlay = true;
+    this.hide();
+  },
+  
   postrollVisible: function () {
     this.postroll = true;
     this.update();
@@ -101,6 +110,7 @@ _V_.ControlBar = _V_.Component.extend({
   },
   
   update: function () {
+    if (this.overlay) return;
     // not visible
     if (!this.visible) {
       // user active -> full
@@ -1003,6 +1013,7 @@ _V_.BigPlayButton = _V_.Button.extend({
 
     player.on("play", _V_.proxy(this, this.hide));
     player.on("ended", _V_.proxy(this, this.show));
+    player.on("showOverlay", _V_.proxy(this, this.hide));
   },
 
   createElement: function(){
@@ -1079,16 +1090,47 @@ _V_.LoadingSpinner = _V_.Component.extend({
   }
 });
 
+/* Overlay
+================================================================================ */
+_V_.Overlay = _V_.Component.extend({
+
+  overlay: null,
+
+  init: function(player, options){
+    this.overlay = $('.vjs-overlay');
+    this._super(player, options);
+    if (this.overlay.length > 0) {
+      player.on("ended", _V_.proxy(this, this.show));
+    }
+  },
+
+  createElement: function(){
+    return _V_.createElement("div", {
+      className: this.overlay.length > 0 ? this.overlay.attr('class') : "",
+      innerHTML: this.overlay.length > 0 ? this.overlay.html() : "",
+      style: "display: none"
+    })
+  },
+
+  show: function(){
+    $(this.el).show();
+    this.player.triggerEvent("showOverlay");
+  }
+});
+
 /* Postroll
 ================================================================================ */
 _V_.Postroll = _V_.Component.extend({
-
+  
+  overlay: false,
+  
   postroll: null,
-
+  
   init: function(player, options){
     this.postroll = $('.vjs-postroll');
     this._super(player, options);
     if (this.postroll.length > 0) {
+      player.on("showOverlay", _V_.proxy(this, this.overlayVisible));
       player.on("ended", _V_.proxy(this, this.show));
       player.on("play", _V_.proxy(this, this.hide));
       player.on("seeking", _V_.proxy(this, this.hide));
@@ -1104,13 +1146,19 @@ _V_.Postroll = _V_.Component.extend({
   },
 
   show: function(){
-    $(this.el).show();
-    this.player.triggerEvent("showPostroll");
+    if (!this.overlay) {
+      $(this.el).show();
+      this.player.triggerEvent("showPostroll");
+    }
   },
 
   hide: function(){
     $(this.el).hide();
     this.player.triggerEvent("hidePostroll");
+  },
+
+  overlayVisible: function () {
+    this.overlay = true;
   }
 });
 
