@@ -142,8 +142,7 @@ _V_.html5 = _V_.PlaybackTech.extend({
       that.setCurrentTime(time);
     });
     this.player.one('seeked', function () {
-      that.play();
-      that.player.trigger('startedAt');
+      that.player.trigger('startAt');
     });
   },
   
@@ -380,8 +379,7 @@ _V_.flash = _V_.PlaybackTech.extend({
     function setTime(value) {
       if (that.buffered().end() > (value + 10)) {
         that.player.on('seeked', function () {
-          that.play();
-          that.player.trigger('startedAt');
+          that.player.trigger('startAt');
         });
         that.setCurrentTime(value);
       } else {
