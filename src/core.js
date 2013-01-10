@@ -69,8 +69,8 @@ VideoJS.options = {
     "upperRightLogo": {},
     "bigPlayButton": {},
     "bigPlayToggle": {},
-    "postroll": {},
     "overlay": {},
+    "postroll": {},
     "controlBar": {}
   },
 
