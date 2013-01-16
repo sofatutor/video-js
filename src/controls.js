@@ -1100,7 +1100,7 @@ _V_.Overlay = _V_.Component.extend({
     this.overlay = $('.vjs-overlay');
     this._super(player, options);
     // overlay must be first before any postroll
-    if (this.overlay.length > 0 && $('.vjs-overlay, .vjs-postroll').get(0).is('.vjs-postroll')) {
+    if (this.overlay.length > 0 && $('.vjs-overlay, .vjs-postroll').first().is('.vjs-postroll')) {
       player.on("ended", _V_.proxy(this, this.show));
     }
   },
