@@ -206,7 +206,8 @@ _V_.html5 = _V_.PlaybackTech.extend({
 /* HTML5 Support Testing -------------------------------------------------------- */
 
 _V_.html5.isSupported = function () {
-  return !!document.createElement("video").canPlayType;
+  return !(_V_.ua.match("Chrome") && _V_.yuvj420pVideo) && !!document.createElement("video").canPlayType;
+  //return !!document.createElement("video").canPlayType;
 };
 
 _V_.html5.canPlaySource = function (srcObj) {
