@@ -1445,9 +1445,6 @@ _V_.SeekBar = _V_.Slider.extend({
     this._super(event);
 
     this.player.scrubbing = true;
-
-    this.videoWasPlaying = !this.player.paused();
-    this.player.pause();
   },
 
   onMouseMove: function(event){
@@ -1464,9 +1461,6 @@ _V_.SeekBar = _V_.Slider.extend({
     this._super(event);
 
     this.player.scrubbing = false;
-    if (this.videoWasPlaying) {
-      this.player.play();
-    }
   },
 
   stepForward: function(){
